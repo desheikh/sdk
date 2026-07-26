@@ -194,6 +194,29 @@ Farbauswahl-Eingabe.
 }
 ```
 
+Beschränken Sie ein Farbfeld mit `presets` und `allowCustom` auf eine bestimmte Farbrolle — oder sperren Sie es darauf. Beide haben dieselbe Form wie die editorweite [`colors`](/de/api/editor#vordefinierte-farben)-Konfiguration, gelten aber nur für dieses Feld, sodass ein Feld ein Akzent-/Ink-Paar anbieten kann, während alle anderen Farbfelder die globale Palette behalten:
+
+```ts
+{
+  key: 'buttonColor',
+  label: 'Button Color',
+  type: 'color',
+  presets: ['#0b5cff', '#111827'],
+  allowCustom: false, // Autoren wählen nur aus den beiden Markenfarben
+}
+```
+
+Eine Feldkonfiguration verfeinert die editorweite — sie kann einschränken, was Autoren tun dürfen, aber nie entsperren, was der Editor gesperrt hat:
+
+- **Nicht gesetzt bedeutet erben.** Ein Feld, das keines von beiden setzt, übernimmt die Palette des Editors und dessen `allowCustom`-Einstellung.
+- **`presets`** müssen `#rgb`- / `#rrggbb`-Hex-Werte sein und werden genau wie die Presets auf Editor-Ebene validiert — ungültige Einträge werden übersprungen und mit einer Konsolenwarnung protokolliert, die den Block und das Feld benennt. Eine leere Liste (`presets: []`) oder eine Liste, deren Einträge alle ungültig sind, schränkt nichts ein, sodass das Feld auf die Palette des Editors zurückfällt (ebenfalls mit einer Warnung).
+- **`allowCustom: false`** sperrt dieses Feld auf seine Palette, auch wenn der übrige Editor freie Eingaben zulässt. **`allowCustom: true` kann ein Feld nicht entsperren, wenn die editorweite `colors.allowCustom` auf `false` steht** — diese Anforderung wird mit einer Warnung ignoriert.
+- **Standardwerte außerhalb der Palette werden gemeldet.** Ist das Feld am Ende gesperrt, wird vor einem `default` außerhalb seiner effektiven Palette gewarnt: Neue Blöcke würden mit einer Farbe beginnen, für die der Farbwähler kein Feld anbietet.
+
+Die `presets` eines Feldes **ersetzen** die Palette des Editors für dieses Feld, statt eine Schnittmenge mit ihr zu bilden, sodass ein gesperrtes Feld eigene Farben mitbringen kann: Ist der Editor auf `['#0b5cff', '#111827']` gesperrt und ein Feld auf `presets: ['#e11d48']` gesetzt, bietet dessen Farbwähler nur `#e11d48` an, dazu das führende „Keine Farbe“-Feld, das jeder gesperrte Farbwähler rendert. Was ein Feld einschränkt, ist die Freiheit der Autoren, nicht die Größe oder Zusammensetzung der Palette — ein Feld darf mehr Farben angeben als das editorweite Raster, und was es nie kann, ist einen gesperrten Editor entsperren.
+
+Wird eine Palette bei einem Template mit bereits gespeicherten Inhalten eingeschränkt, kann eine gespeicherte Farbe im gesperrten Modus nicht mehr auswählbar sein — der Farbwähler zeigt dann kein markiertes Feld; ein Klick auf das führende „Keine Farbe“-Feld führt zurück in die Palette.
+
 ### number
 
 Numerische Eingabe mit optionalen min-, max- und step-Einschränkungen.
