@@ -37,6 +37,36 @@ export const SELECTORS = {
   // Sidebar
   sidebarRail: ".tpl-sidebar-rail",
 
+  // Saved blocks (OSS, backed by the playground's localStorage provider)
+  savedBlocksRailBtn: 'button[aria-label="Browse saved blocks"]',
+  savedBlocksBrowser: '[data-testid="saved-blocks-browser"]',
+  savedBlocksBrowserTitle: "#tpl-saved-blocks-browser-title",
+  savedBlocksCard: '[data-testid="saved-block-card"]',
+  savedBlocksRenameBtn: 'button[aria-label="Rename"]',
+  savedBlocksDeleteBtn: 'button[aria-label="Delete"]',
+  saveBlockDialogTitle: "#tpl-save-block-title",
+  savedBlocksSaveSummary: '[data-testid="saved-blocks-save-summary"]',
+  // Pick session (canvas multi-pick started from a block's bookmark action)
+  savedBlocksSaveAction: 'button[aria-label="Save as Block"]',
+  savedBlocksPickBar: '[data-testid="saved-blocks-pick-bar"]',
+  savedBlocksPickCount: '[data-testid="saved-blocks-pick-count"]',
+  savedBlocksPickConfirm: '[data-testid="saved-blocks-pick-confirm"]',
+  savedBlocksPickCancel: '[data-testid="saved-blocks-pick-cancel"]',
+  blockPicked: "[data-tpl-picked]",
+  // Save dialog's reorderable preview list (seeded in pick order)
+  savedBlocksReorderList: '[data-testid="saved-blocks-reorder-list"]',
+  savedBlocksReorderRow: '[data-testid="saved-blocks-reorder-row"]',
+  savedBlocksReorderHandle: '[data-testid="saved-blocks-reorder-handle"]',
+  // Categories (optional free-text grouping)
+  savedBlocksNameInput: '[data-testid="saved-blocks-name-input"]',
+  savedBlocksCategoryInput: '[data-testid="saved-blocks-category-input"]',
+  savedBlocksCategoryFilter: '[data-testid="saved-blocks-category-filter"]',
+  savedBlocksCategoryBadge: '[data-testid="saved-block-category"]',
+  savedBlocksEditCategory: '[data-testid="saved-blocks-edit-category"]',
+  savedBlocksLoading: '[data-testid="saved-blocks-loading"]',
+  savedBlocksBrowserClose: '[data-testid="saved-blocks-browser-close"]',
+  savedBlocksPreviewCanvas: '[data-testid="saved-blocks-preview-canvas"]',
+
   // Small-screen gate (#235)
   smallScreenNotice: '[data-testid="small-screen-notice"]',
 

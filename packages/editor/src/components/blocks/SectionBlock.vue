@@ -21,6 +21,7 @@ import {
   EDITOR_KEY,
   CONDITION_PREVIEW_KEY,
   BLOCK_REGISTRY_KEY,
+  CAPABILITIES_KEY,
   requireInject,
 } from "../../keys";
 
@@ -42,6 +43,25 @@ const { t } = useI18n();
 const editor = requireInject(EDITOR_KEY, "SectionBlock");
 const conditionPreview = inject(CONDITION_PREVIEW_KEY, null);
 const blockRegistry = inject(BLOCK_REGISTRY_KEY, null);
+const caps = inject(CAPABILITIES_KEY, {});
+
+/**
+ * A click on a column child either picks the whole section (during a
+ * saved-blocks pick session) or selects the child.
+ *
+ * Section children are never independently savable — a saved block's content is
+ * a top-level `Block[]` — so the section is what a click resolves to. This has
+ * to be explicit: `BlockWrapper.handleClick` calls `stopPropagation()`, so the
+ * click never reaches the section's own wrapper on its own.
+ */
+function handleChildSelect(childBlockId: string): void {
+  const savedBlocks = caps.savedBlocks;
+  if (savedBlocks?.isPicking.value) {
+    savedBlocks.togglePick(props.block.id);
+    return;
+  }
+  editor.selectBlock(childBlockId);
+}
 
 const columnWidths = computed(() => {
   switch (props.block.columns) {
@@ -162,7 +182,8 @@ function handleFetchData(
               :is-selected="editor.state.selectedBlockId === childBlock.id"
               :viewport="viewport"
               :preview-mode="editor.state.previewMode"
-              @select="editor.selectBlock(childBlock.id)"
+              nested
+              @select="handleChildSelect(childBlock.id)"
             >
               <component
                 :is="getBlockComponent(childBlock)"
@@ -180,7 +201,7 @@ function handleFetchData(
         <div
           v-if="getColumnBlocks(colIndex).length === 0"
           data-testid="section-drop-hint"
-          class="tpl:pointer-events-none tpl:absolute tpl:inset-0 tpl:flex tpl:items-center tpl:justify-center tpl:text-xs tpl:text-[var(--tpl-text-dim)]"
+          class="tpl:pointer-events-none tpl:absolute tpl:inset-0 tpl:flex tpl:items-center tpl:justify-center tpl:text-xs tpl:text-[var(--tpl-chrome-text-dim)]"
         >
           <span>{{ t.section.dropHere }}</span>
         </div>

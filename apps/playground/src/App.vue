@@ -20,7 +20,11 @@ import {
   useTimeoutFn,
 } from "@vueuse/core";
 import { useFocusTrap } from "@vueuse/integrations/useFocusTrap";
-import { init, unmount } from "@templatical/editor";
+import {
+  init,
+  unmount,
+  createLocalStorageSavedBlocksProvider,
+} from "@templatical/editor";
 import type { TemplaticalEditor } from "@templatical/editor";
 import type {
   TemplateContent,
@@ -31,6 +35,8 @@ import type {
   TemplateDefaults,
   ColorsConfig,
   FontsConfig,
+  SavedBlock,
+  SavedBlocksProvider,
 } from "@templatical/types";
 import {
   createDefaultTemplateContent,
@@ -205,6 +211,94 @@ function cancelDataSourcePicker(): void {
 
 const editorContainer = ref<HTMLElement | null>(null);
 const editor = ref<TemplaticalEditor | null>(null);
+
+/** Storage key per template, so each gets its own library and its own defaults. */
+function savedBlocksKeyFor(templateName: string): string {
+  const slug = templateName
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+  return `templatical:saved-blocks:${slug}`;
+}
+
+/**
+ * Seed a template's demo saved blocks the first time it is opened.
+ *
+ * Only when the key is absent — never a merge or a re-seed. Re-seeding would
+ * resurrect entries the user deleted and overwrite their renames, which would
+ * make delete and rename look broken in the very demo meant to show them off.
+ * The fixtures each include one entry the store marks `canUpdate: false` /
+ * `canDelete: false`, and that entry is what keeps a library from being emptied,
+ * so nothing is lost by seeding exactly once.
+ */
+function seedSavedBlocks(
+  key: string,
+  defaults: SavedBlock[] | undefined,
+): void {
+  if (!defaults?.length) return;
+  if (localStorage.getItem(key) !== null) return;
+  localStorage.setItem(key, JSON.stringify(defaults));
+}
+
+/**
+ * Providers are memoised per template, NOT per `init()` call. `init()` re-runs
+ * whenever config or locale changes, and a fresh provider each time would be
+ * harmless in itself — but recreating on template *name* keeps one instance per
+ * library, so a locale switch can't reset what the user saved. Switching
+ * template switches library.
+ *
+ * Setting `tpl-playground-saved-blocks-readonly` demonstrates the read-only
+ * library: a provider withholds its mutations by passing `false` instead of a
+ * function, and the editor then hides every affordance that would need them
+ * while browsing, previewing and inserting keep working.
+ */
+const savedBlocksProviders = new Map<string, SavedBlocksProvider>();
+
+function savedBlocksProviderFor(
+  template?: TemplateOption,
+): SavedBlocksProvider {
+  const name = template?.name ?? "Scratch";
+  const cached = savedBlocksProviders.get(name);
+  if (cached) return cached;
+
+  const key = savedBlocksKeyFor(name);
+  seedSavedBlocks(key, template?.savedBlocks);
+  const base = createLocalStorageSavedBlocksProvider({ key });
+
+  // `…-delay` stands in for a sluggish backend, so the browser's first-open
+  // skeleton is exercisable: localStorage answers instantly, which is the one
+  // latency profile that can't reproduce it.
+  const delayMs = Number(
+    localStorage.getItem("tpl-playground-saved-blocks-delay") ?? "0",
+  );
+  const withDelay: SavedBlocksProvider =
+    delayMs > 0
+      ? {
+          ...base,
+          list: async (params) => {
+            await new Promise((resolve) => setTimeout(resolve, delayMs));
+            return base.list(params);
+          },
+        }
+      : base;
+
+  const readOnly =
+    localStorage.getItem("tpl-playground-saved-blocks-readonly") === "true";
+  const provider = readOnly
+    ? {
+        ...withDelay,
+        create: false as const,
+        update: false as const,
+        delete: false as const,
+      }
+    : withDelay;
+
+  savedBlocksProviders.set(name, provider);
+  return provider;
+}
+
+/** Swapped on each template open; read by `init()` via the config below. */
+let savedBlocksProvider: SavedBlocksProvider = savedBlocksProviderFor();
 
 type ExportTab = "mjml" | "html" | "json";
 const exportTabs: readonly ExportTab[] = ["mjml", "html", "json"] as const;
@@ -602,6 +696,10 @@ function chooseTemplate(
 ): void {
   selectedContent = content;
   selectedCustomBlocks = template?.customBlocks;
+  // Per-template saved-blocks library, seeded on first open. Memoised by name,
+  // so a later locale/config re-init reuses the same instance rather than
+  // resetting what the user saved.
+  savedBlocksProvider = savedBlocksProviderFor(template);
   // Per-template opt-in for the SDK's live HTML-block preview; reset on each
   // template open so other templates keep the default static placeholder.
   currentHtmlBlockPreview = template?.htmlBlockPreview;
@@ -979,6 +1077,10 @@ async function initEditor(): Promise<void> {
       uiTheme: uiTheme.value,
       locale: sdkLocale.value,
       onRequestMedia: enableRequestMedia.value ? requestMedia : undefined,
+      // Always on in the playground: saved blocks are backed by the bundled
+      // browser-local provider, so the OSS path is exercised on every run
+      // without needing a backend. Entries persist in this browser profile.
+      savedBlocks: savedBlocksProvider,
     });
     // E2E affordance: expose `editor.toMjml()` on window so Playwright tests
     // can read the export-path output without depending on the playground's

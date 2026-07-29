@@ -8,9 +8,7 @@ import {
   CUSTOM_BLOCK_DEFINITIONS_KEY,
   PALETTE_BLOCKS_KEY,
   CAPABILITIES_KEY,
-  CLOUD_TRANSLATIONS_KEY,
 } from '../src/keys';
-import cloudEn from '../src/i18n/locales/cloud/en';
 
 function makeEditor() {
   const addBlock = vi.fn();
@@ -222,40 +220,116 @@ describe('Sidebar', () => {
     expect(btn.exists()).toBe(true);
   });
 
-  it('shows modules browser button when capabilities provide savedModules with count > 0', () => {
+  // No CLOUD_TRANSLATIONS_KEY provide needed: the saved-blocks strings moved
+  // into the OSS chunk, so the rail no longer depends on cloud translations.
+  it('shows the saved blocks browser button when the capability is available with count > 0', async () => {
     const { editor } = makeEditor();
     const openBrowser = vi.fn();
     const wrapper = mountSidebar({
       [EDITOR_KEY]: editor,
-      [CLOUD_TRANSLATIONS_KEY]: cloudEn,
       [CAPABILITIES_KEY]: {
-        savedModules: {
-          moduleCount: { value: 3 },
+        savedBlocks: {
+          count: { value: 3 },
+          isAvailable: { value: true },
           openBrowser,
+          openSaveDialog: vi.fn(),
         },
       } as any,
     });
 
-    const moduleBtn = wrapper.find(
-      'button[aria-label="sidebarNav.browseModules"]',
+    const btn = wrapper.find(
+      'button[aria-label="sidebarNav.browseSavedBlocks"]',
     );
-    expect(moduleBtn.exists()).toBe(true);
+    expect(btn.exists()).toBe(true);
+
+    await btn.trigger('click');
+    expect(openBrowser).toHaveBeenCalledTimes(1);
   });
 
-  it('does NOT show modules browser when moduleCount is 0', () => {
+  /* Inverted deliberately: this used to require `count > 0`. Gating on the
+     loaded count meant the entry only appeared once the consumer's `list()`
+     resolved — a slow endpoint shifted the rail mid-session, and an empty
+     library hid the feature so a user could never discover it or learn the
+     save flow. The list is now fetched when the browser opens, so availability
+     is the whole gate and an empty library opens to the empty state. */
+  it('shows the saved blocks browser even when nothing is loaded yet', () => {
     const { editor } = makeEditor();
     const wrapper = mountSidebar({
       [EDITOR_KEY]: editor,
       [CAPABILITIES_KEY]: {
-        savedModules: {
-          moduleCount: { value: 0 },
+        savedBlocks: {
+          count: { value: 0 },
+          isAvailable: { value: true },
           openBrowser: vi.fn(),
+          openSaveDialog: vi.fn(),
         },
       } as any,
     });
 
     expect(
-      wrapper.find('button[aria-label="sidebarNav.browseModules"]').exists(),
+      wrapper
+        .find('button[aria-label="sidebarNav.browseSavedBlocks"]')
+        .exists(),
+    ).toBe(true);
+  });
+
+  it('renders no count badge — it would pop in when the list lands', () => {
+    const { editor } = makeEditor();
+    const wrapper = mountSidebar({
+      [EDITOR_KEY]: editor,
+      [CAPABILITIES_KEY]: {
+        savedBlocks: {
+          count: { value: 7 },
+          isAvailable: { value: true },
+          openBrowser: vi.fn(),
+          openSaveDialog: vi.fn(),
+        },
+      } as any,
+    });
+
+    const btn = wrapper.find(
+      'button[aria-label="sidebarNav.browseSavedBlocks"]',
+    );
+    expect(btn.exists()).toBe(true);
+    // The count is still on the capability, just not rendered here.
+    expect(btn.text()).not.toContain('7');
+  });
+
+  // Guards the dead-button class of bug: Cloud provides the capability before
+  // its plan config resolves, so an unavailable feature must render nothing
+  // even when the list happens to be non-empty.
+  it('does NOT show the saved blocks browser when the feature is unavailable', () => {
+    const { editor } = makeEditor();
+    const wrapper = mountSidebar({
+      [EDITOR_KEY]: editor,
+      [CAPABILITIES_KEY]: {
+        savedBlocks: {
+          count: { value: 3 },
+          isAvailable: { value: false },
+          openBrowser: vi.fn(),
+          openSaveDialog: vi.fn(),
+        },
+      } as any,
+    });
+
+    expect(
+      wrapper
+        .find('button[aria-label="sidebarNav.browseSavedBlocks"]')
+        .exists(),
+    ).toBe(false);
+  });
+
+  it('does NOT show the saved blocks browser when no capability is provided', () => {
+    const { editor } = makeEditor();
+    const wrapper = mountSidebar({
+      [EDITOR_KEY]: editor,
+      [CAPABILITIES_KEY]: {} as any,
+    });
+
+    expect(
+      wrapper
+        .find('button[aria-label="sidebarNav.browseSavedBlocks"]')
+        .exists(),
     ).toBe(false);
   });
 });

@@ -4,7 +4,7 @@ import type {
   Comment,
   CustomFont,
   PlanConfig,
-  SavedModule,
+  SavedBlock,
   Template,
   TemplateContent,
   TemplateSnapshot,
@@ -306,17 +306,21 @@ export class ApiClient {
     );
   }
 
-  async listModules(search?: string): Promise<SavedModule[]> {
+  async listModules(search?: string, category?: string): Promise<SavedBlock[]> {
     const url = buildUrl(API_ROUTES["savedModules.index"], this.baseParams);
-    const query = search ? `?search=${encodeURIComponent(search)}` : "";
-    return this.request<SavedModule[]>(`${url}${query}`);
+    const params = new URLSearchParams();
+    if (search) params.set("search", search);
+    if (category) params.set("category", category);
+    const query = params.size > 0 ? `?${params}` : "";
+    return this.request<SavedBlock[]>(`${url}${query}`);
   }
 
   async createModule(data: {
     name: string;
     content: Block[];
-  }): Promise<SavedModule> {
-    return this.request<SavedModule>(
+    category?: string;
+  }): Promise<SavedBlock> {
+    return this.request<SavedBlock>(
       buildUrl(API_ROUTES["savedModules.store"], this.baseParams),
       {
         method: "POST",
@@ -327,9 +331,9 @@ export class ApiClient {
 
   async updateModule(
     id: string,
-    data: Partial<{ name: string; content: Block[] }>,
-  ): Promise<SavedModule> {
-    return this.request<SavedModule>(
+    data: Partial<{ name: string; content: Block[]; category: string }>,
+  ): Promise<SavedBlock> {
+    return this.request<SavedBlock>(
       buildUrl(API_ROUTES["savedModules.update"], {
         ...this.baseParams,
         savedModule: id,

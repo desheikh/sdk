@@ -152,10 +152,15 @@ describe("section drag + cycle defenses", () => {
     join(SRC, "components/blocks/BlockWrapper.vue"),
     "utf8",
   );
+  const saveDialog = readFileSync(
+    join(SRC, "components/SaveBlockDialog.vue"),
+    "utf8",
+  );
 
-  it("all three Sortables use force-fallback", () => {
-    // ALL THREE Sortables (sidebar, canvas, section column) MUST use
-    // `:force-fallback="true"`. Two reasons compose:
+  it("all four Sortables use force-fallback", () => {
+    // ALL FOUR Sortables (sidebar, canvas, section column, and the save
+    // dialog's reorder list) MUST use `:force-fallback="true"`. Two reasons
+    // compose:
     //   1. Chrome's HTML5 native-drag mode silently fails to initiate
     //      drag from a child block's grip inside a SECTION column
     //      (nested Sortable case). Sortable's `_prepareDragStart` runs
@@ -192,6 +197,7 @@ describe("section drag + cycle defenses", () => {
     expect(canvas).toMatch(/:force-fallback="true"/);
     expect(sidebar).toMatch(/:force-fallback="true"/);
     expect(sectionBlock).toMatch(/:force-fallback="true"/);
+    expect(saveDialog).toMatch(/:force-fallback="true"/);
 
     // Both canvas + section Sortables retain `handle=".tpl-block-btn"`.
     // In fallback mode the handle still gates drag initiation; without
@@ -271,6 +277,225 @@ describe("section drag + cycle defenses", () => {
     expect(canvas).toMatch(/ghost-class="tpl-ghost"/);
     expect(sectionBlock).toMatch(/ghost-class="tpl-ghost"/);
     expect(sidebar).not.toMatch(/ghost-class=/);
+  });
+
+  it("the save dialog's reorder list declares no `group`", () => {
+    // The canvas and section-column Sortables share `group="blocks"`, which is
+    // what lets a block move between them. The dialog's list reorders a
+    // throwaway array of already-picked blocks and must never exchange items
+    // with a live canvas list — a drop from the canvas into it would insert a
+    // block the pick session never chose, and a drop out of it would put a
+    // block on the canvas from inside a modal. Omitting `group` leaves Sortable
+    // on a private auto-generated one, which cannot pair with any other list.
+    const dialogSortable = saveDialog.match(
+      /<VueDraggable[\s\S]*?>/,
+    )?.[0] as string;
+    expect(dialogSortable).toBeTypeOf("string");
+    expect(dialogSortable).not.toMatch(/\bgroup=/);
+  });
+
+  it("the save dialog's reorder list drags only from its grip handle", () => {
+    // Without a handle the whole row is a drag target, and the row is mostly a
+    // live block preview — pointer-drags meant as clicks on the preview would
+    // start reordering. The handle class must match the button that renders it.
+    expect(saveDialog).toMatch(/handle="\.tpl-saved-block-reorder-handle"/);
+    expect(
+      readFileSync(join(SRC, "components/SavedBlockPreviewRow.vue"), "utf8"),
+    ).toMatch(/class="tpl-saved-block-reorder-handle/);
+  });
+});
+
+describe("saved blocks: picked state cannot be hidden by a block's own fill", () => {
+  const blockWrapper = read("components/blocks/BlockWrapper.vue");
+
+  /* Regression: the picked state was a background tint on `.tpl-block`. But each
+     block paints its own background on the INNER `.tpl-block-content`
+     (`getBlockWrapperStyle` → `backgroundColor || "transparent"`), which covers
+     the parent. Blocks with a colour set showed no tint; transparent ones showed
+     it — so picking looked different block to block within one template.
+
+     `outline` and a non-inset `box-shadow` draw on `.tpl-block`'s border box,
+     outside the content's paint area, so they're immune to the block's own fill.
+     Anything conveying picked-ness must use those, never a fill. */
+  function pickedRule(): string {
+    const m = blockWrapper.match(/\.tpl-block--picked\s*\{([^}]*)\}/);
+    expect(m).not.toBe(null);
+    return m![1];
+  }
+
+  it("does NOT convey picked via background-color", () => {
+    expect(pickedRule()).not.toMatch(/background(-color)?\s*:/);
+  });
+
+  it("conveys picked via outline + a non-inset box-shadow ring", () => {
+    const rule = pickedRule();
+    expect(rule).toMatch(/outline:\s*2px solid/);
+    expect(rule).toContain("box-shadow:");
+    // `inset` would paint inside the border box and be covered like a fill.
+    expect(rule).not.toContain("inset");
+  });
+
+  it("stays distinguishable from idle by line style, not colour alone", () => {
+    const idle = blockWrapper.match(/\.tpl-block--idle\s*\{([^}]*)\}/);
+    expect(idle).not.toBe(null);
+    // idle is dashed, picked is solid — a non-colour differentiator, so the
+    // state survives without colour perception.
+    expect(idle![1]).toMatch(/outline:\s*[\d.]+px dashed/);
+    expect(pickedRule()).toMatch(/outline:\s*[\d.]+px solid/);
+  });
+});
+
+describe("saved blocks: pick session stays lazily loaded", () => {
+  const panels = read("components/SavedBlocksPanels.vue");
+  const ossEditor = read("Editor.vue");
+  const cloudEditor = read("cloud/CloudEditor.vue");
+
+  /* Cost has to track usage: a consumer with no `SavedBlocksProvider` must
+     download none of this. Both editors lazy-load `SavedBlocksPanels` behind a
+     `v-if` on availability, and every piece of saved-blocks UI hangs off that
+     wrapper — including the pick bar. Importing the bar directly from an editor
+     would pull it into the main entry for everyone. */
+  it("the pick bar is lazily imported by SavedBlocksPanels", () => {
+    expect(panels).toMatch(
+      /defineAsyncComponent\(\s*\(\) => import\("\.\/SavedBlocksPickBar\.vue"\)/,
+    );
+  });
+
+  it("neither editor references the pick bar directly", () => {
+    expect(ossEditor).not.toContain("SavedBlocksPickBar");
+    expect(cloudEditor).not.toContain("SavedBlocksPickBar");
+  });
+
+  it("every saved-blocks surface is async and gated on its own state", () => {
+    for (const name of [
+      "SavedBlocksPickBar",
+      "SaveBlockDialog",
+      "SavedBlocksBrowserModal",
+    ]) {
+      expect(panels).toContain(`import("./${name}.vue")`);
+    }
+    // Rendered only while a session runs / a dialog is open, so the chunk fetch
+    // is deferred to first actual use rather than to mount.
+    expect(panels).toContain('v-if="feature.isPicking.value"');
+    expect(panels).toContain('v-if="feature.isSaveDialogOpen.value"');
+    expect(panels).toContain('v-if="feature.isBrowserOpen.value"');
+  });
+
+  /* The save dialog's preview rows pull in the block preview components, which
+     is the heaviest thing saved blocks touch. They're allowed to ride along in
+     the dialog's own async chunk, but nothing outside it may reference them —
+     a static import from either editor would hoist the whole preview tree into
+     the main entry for consumers who never configure a provider. */
+  it("preview rows are reachable only through the async save dialog", () => {
+    const saveDialog = read("components/SaveBlockDialog.vue");
+    expect(saveDialog).toContain('from "./SavedBlockPreviewRow.vue"');
+
+    for (const src of [ossEditor, cloudEditor, panels]) {
+      expect(src).not.toContain("SavedBlockPreviewRow");
+      expect(src).not.toContain("SavedBlockPreviewCanvas");
+    }
+  });
+});
+
+describe("chrome tokens survive the email-content override", () => {
+  const styles = read("styles/index.css");
+  const blockWrapper = read("components/blocks/BlockWrapper.vue");
+  const sectionBlock = read("components/blocks/SectionBlock.vue");
+
+  /* `.tpl[data-tpl-theme="dark"] .tpl-block-content` re-declares these tokens so
+     email content renders light. A section's children render INSIDE that
+     wrapper, so chrome referencing the raw token inherits the light value and
+     stops matching the dark editor UI (the near-white nested action bar). The
+     `--tpl-chrome-*` aliases are declared on `.tpl`, where substitution happens,
+     so a descendant redefinition cannot reach them. */
+  const SHADOWED = [
+    "bg-elevated",
+    "border-light",
+    "text-muted",
+    "text-dim",
+    "primary-light",
+    "primary-hover",
+  ];
+
+  /** The real rule body — `indexOf` would match the selector inside a comment. */
+  function overrideBody(): string {
+    const m = styles.match(
+      /^\.tpl\[data-tpl-theme="dark"\]\s+\.tpl-block-content\s*\{([^}]*)\}/m,
+    );
+    expect(m).not.toBe(null);
+    return m![1];
+  }
+
+  it("declares a chrome alias for every token the content override shadows", () => {
+    const override = overrideBody();
+
+    for (const name of [...SHADOWED, "text"]) {
+      // Each token the override shadows...
+      expect(override).toContain(`--tpl-${name}:`);
+      // ...has a chrome alias pointing back at the un-shadowed source.
+      expect(styles).toContain(`--tpl-chrome-${name}: var(--tpl-${name});`);
+    }
+  });
+
+  it("declares the chrome aliases OUTSIDE the override (or they'd be shadowed too)", () => {
+    // The whole mechanism depends on the aliases being substituted at `.tpl`.
+    // Declaring one inside the override would defeat it.
+    expect(overrideBody()).not.toContain("--tpl-chrome-");
+    expect(styles).toContain("--tpl-chrome-bg-elevated: var(--tpl-bg-elevated);");
+  });
+
+  it("block chrome never references a shadowed token directly", () => {
+    // Every reference to these tokens inside BlockWrapper/SectionBlock is
+    // chrome — email content is styled from block data via inline styles — so
+    // any raw usage here is the regression.
+    for (const src of [blockWrapper, sectionBlock]) {
+      for (const name of [...SHADOWED, "text"]) {
+        expect(src).not.toContain(`var(--tpl-${name})`);
+      }
+    }
+  });
+
+  it("the action bar and nested placeholders use chrome tokens", () => {
+    expect(blockWrapper).toContain("var(--tpl-chrome-bg-elevated)");
+    expect(blockWrapper).toContain("var(--tpl-chrome-text-muted)");
+    expect(sectionBlock).toContain("var(--tpl-chrome-text-dim)");
+  });
+});
+
+describe("saved blocks: section children are not savable", () => {
+  const blockWrapper = read("components/blocks/BlockWrapper.vue");
+  const sectionBlock = read("components/blocks/SectionBlock.vue");
+
+  // Regression: the bookmark rendered on section children too, but the save
+  // dialog only lists top-level blocks — so the pre-selected id matched
+  // nothing, Save still enabled, and it persisted an EMPTY saved block.
+  // Insertion is top-level-only, so a nested block could never round-trip
+  // back into its column anyway; save the whole section instead.
+  it("SectionBlock marks its column children as `nested`", () => {
+    const childWrapper = sectionBlock.slice(
+      sectionBlock.indexOf("<BlockWrapper"),
+      sectionBlock.indexOf(">", sectionBlock.indexOf("<BlockWrapper")),
+    );
+    expect(childWrapper).toContain(':block="childBlock"');
+    expect(childWrapper).toMatch(/\bnested\b/);
+  });
+
+  it("BlockWrapper gates the save action on NOT being nested", () => {
+    expect(blockWrapper).toContain("nested?: boolean");
+    // The gate must include the nested check, not just capability presence.
+    expect(blockWrapper).toMatch(
+      /canSaveAsBlock = computed\(\s*\(\) =>\s*!props\.nested &&/,
+    );
+  });
+
+  it("Canvas does NOT mark top-level blocks as nested", () => {
+    const canvasSrc = read("components/Canvas.vue");
+    const topWrapper = canvasSrc.slice(
+      canvasSrc.indexOf("<BlockWrapper"),
+      canvasSrc.indexOf(">", canvasSrc.indexOf("<BlockWrapper")),
+    );
+    expect(topWrapper).toContain(':block="block"');
+    expect(topWrapper).not.toMatch(/\bnested\b/);
   });
 });
 

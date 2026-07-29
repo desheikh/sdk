@@ -31,6 +31,19 @@ const props = defineProps<{
   isSelected: boolean;
   viewport?: ViewportSize;
   previewMode?: boolean;
+  /**
+   * This block sits inside a section column rather than at the top level.
+   * Section children can't be saved as saved blocks: a saved block's content is
+   * a top-level `Block[]` and insertion always targets the top level, so a
+   * nested block could be saved but never re-inserted where it came from.
+   * Save the whole section instead — its `children` round-trip with it.
+   */
+  nested?: boolean;
+  /**
+   * Chosen during a saved-blocks pick session. Independent of `isSelected` —
+   * picking never touches `EditorState.selectedBlockId`.
+   */
+  picked?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -131,7 +144,20 @@ const conditionPreview = inject(CONDITION_PREVIEW_KEY, null);
 
 const caps = inject(CAPABILITIES_KEY, {});
 
-const canSaveAsModule = computed(() => !!caps.savedModules);
+const isPicking = computed(() => caps.savedBlocks?.isPicking.value === true);
+
+// `canCreate` too: a provider that withheld `create` gets a read-only library,
+// so offering the bookmark would start a pick session that could never save.
+const canSaveAsBlock = computed(
+  () =>
+    !props.nested &&
+    caps.savedBlocks?.isAvailable.value === true &&
+    caps.savedBlocks?.canCreate.value === true,
+);
+
+// The action bar is chrome for editing a single block; during a pick session the
+// canvas is in a different mode and N bars would be noise.
+const showActions = computed(() => props.isSelected && !isPicking.value);
 
 const blockCommentCount = computed(
   () => caps.comments?.getBlockCount(props.block.id) ?? 0,
@@ -185,8 +211,10 @@ function handleDuplicate(): void {
   blockActions?.duplicateBlock(props.block);
 }
 
-function handleSaveAsModule(): void {
-  caps.savedModules?.openSaveDialog(props.block.id);
+function handleSaveAsBlock(): void {
+  // Seeds a canvas pick session with this block rather than opening the dialog
+  // straight away — the user picks any others by clicking them.
+  caps.savedBlocks?.startPicking(props.block.id);
 }
 
 function handleConditionToggle(): void {
@@ -200,20 +228,22 @@ function handleConditionToggle(): void {
     class="tpl-block tpl:group tpl:relative tpl:cursor-pointer tpl:rounded-sm tpl:transition-shadow tpl:duration-150"
     :class="{
       'tpl-block--selected': isSelected,
-      'tpl-block--idle': !isSelected,
+      'tpl-block--picked': picked,
+      'tpl-block--idle': !isSelected && !picked,
       'tpl-block--lifted': isLifted,
     }"
     :data-block-id="block.id"
     :data-block-type="block.type"
+    :data-tpl-picked="picked || undefined"
     @click="handleClick"
   >
     <BlockIssueBadge :block-id="block.id" />
     <!-- Floating action bar — positioned to the right of selected block -->
     <div
-      v-if="isSelected"
+      v-if="showActions"
       role="toolbar"
       :aria-label="t.blockActions.drag"
-      class="tpl-block-actions tpl-fade-in tpl:absolute tpl:-right-2 tpl:top-1/2 tpl:z-10 tpl:flex tpl:-translate-y-1/2 tpl:translate-x-full tpl:gap-0.5 tpl:rounded-[var(--tpl-radius-sm)] tpl:p-1 tpl:bg-[var(--tpl-bg-elevated)] tpl:shadow-[var(--tpl-shadow-md)] tpl:border tpl:border-[var(--tpl-border)]"
+      class="tpl-block-actions tpl-fade-in tpl:absolute tpl:-right-2 tpl:top-1/2 tpl:z-10 tpl:flex tpl:-translate-y-1/2 tpl:translate-x-full tpl:gap-0.5 tpl:rounded-[var(--tpl-radius-sm)] tpl:p-1 tpl:bg-[var(--tpl-chrome-bg-elevated)] tpl:shadow-[var(--tpl-shadow-md)] tpl:border tpl:border-[var(--tpl-border)]"
     >
       <button
         ref="dragButtonRef"
@@ -235,11 +265,11 @@ function handleConditionToggle(): void {
         <Copy :size="14" :stroke-width="1.5" />
       </button>
       <button
-        v-if="canSaveAsModule"
+        v-if="canSaveAsBlock"
         class="tpl-block-action-btn tpl:flex tpl:size-7 tpl:cursor-pointer tpl:items-center tpl:justify-center tpl:rounded-sm tpl:border-none tpl:transition-colors tpl:duration-150"
-        :aria-label="t.blockActions.saveAsModule"
-        :title="t.blockActions.saveAsModule"
-        @click.stop="handleSaveAsModule"
+        :aria-label="t.blockActions.saveAsBlock"
+        :title="t.blockActions.saveAsBlock"
+        @click.stop="handleSaveAsBlock"
       >
         <Bookmark :size="14" :stroke-width="1.5" />
       </button>
@@ -257,7 +287,7 @@ function handleConditionToggle(): void {
       class="tpl-block-hidden-overlay tpl:pointer-events-none tpl:absolute tpl:inset-0 tpl:z-[5] tpl:flex tpl:items-center tpl:justify-center tpl:rounded-sm"
     >
       <span
-        class="tpl:flex tpl:items-center tpl:gap-1 tpl:rounded tpl:px-2 tpl:py-1 tpl:text-[10px] tpl:font-medium tpl:bg-[var(--tpl-bg-elevated)] tpl:text-[var(--tpl-text-muted)] tpl:shadow-[var(--tpl-shadow-sm)]"
+        class="tpl:flex tpl:items-center tpl:gap-1 tpl:rounded tpl:px-2 tpl:py-1 tpl:text-[10px] tpl:font-medium tpl:bg-[var(--tpl-chrome-bg-elevated)] tpl:text-[var(--tpl-chrome-text-muted)] tpl:shadow-[var(--tpl-shadow-sm)]"
       >
         <EyeOff :size="12" :stroke-width="1.5" />
         {{
@@ -272,7 +302,7 @@ function handleConditionToggle(): void {
       class="tpl:absolute tpl:-left-1 tpl:top-1/2 tpl:z-[5] tpl:-translate-x-full tpl:-translate-y-1/2"
     >
       <button
-        class="tpl-condition-toggle tpl:flex tpl:cursor-pointer tpl:items-center tpl:justify-center tpl:rounded-md tpl:p-1 tpl:transition-colors tpl:duration-150 tpl:bg-[var(--tpl-bg-elevated)] tpl:text-[var(--tpl-primary)] tpl:border tpl:border-[var(--tpl-border)]"
+        class="tpl-condition-toggle tpl:flex tpl:cursor-pointer tpl:items-center tpl:justify-center tpl:rounded-md tpl:p-1 tpl:transition-colors tpl:duration-150 tpl:bg-[var(--tpl-chrome-bg-elevated)] tpl:text-[var(--tpl-primary)] tpl:border tpl:border-[var(--tpl-border)]"
         :aria-label="t.blockActions.conditionToggle"
         :title="block.displayCondition?.label"
         @click.stop="handleConditionToggle"
@@ -286,7 +316,7 @@ function handleConditionToggle(): void {
       class="tpl:absolute tpl:-right-1 tpl:-top-1 tpl:z-[5] tpl:translate-x-full"
     >
       <button
-        class="tpl-comment-indicator tpl:flex tpl:min-h-6 tpl:min-w-6 tpl:cursor-pointer tpl:items-center tpl:justify-center tpl:gap-0.5 tpl:rounded-full tpl:border-none tpl:px-2 tpl:py-0.5 tpl:text-[10px] tpl:font-semibold tpl:transition-colors tpl:duration-150 tpl:bg-[var(--tpl-primary-light)] tpl:text-[var(--tpl-primary)]"
+        class="tpl-comment-indicator tpl:flex tpl:min-h-6 tpl:min-w-6 tpl:cursor-pointer tpl:items-center tpl:justify-center tpl:gap-0.5 tpl:rounded-full tpl:border-none tpl:px-2 tpl:py-0.5 tpl:text-[10px] tpl:font-semibold tpl:transition-colors tpl:duration-150 tpl:bg-[var(--tpl-chrome-primary-light)] tpl:text-[var(--tpl-primary)]"
         :aria-label="
           format(t.blockActions.comments, { count: String(blockCommentCount) })
         "
@@ -332,6 +362,29 @@ function handleConditionToggle(): void {
   box-shadow: 0 0 8px color-mix(in srgb, var(--tpl-primary) 8%, transparent);
 }
 
+/* Picked (saved-blocks pick session) — a solid outline plus a crisp outer ring.
+   Deliberately NOT a background fill: the block's own background is painted on
+   the inner `.tpl-block-content` (`backgroundColor || "transparent"`), so a tint
+   on `.tpl-block` is covered by any block that sets one and shows through only
+   on transparent ones — the picked state would appear on some blocks and not
+   others in the same template. `outline` and a non-inset `box-shadow` draw on
+   this element's border box, outside the content's paint area, so they read
+   identically regardless of what the block itself is filled with.
+
+   The differentiator from idle is line style and weight (dashed 1.5px @30% →
+   solid 2px @100%) plus the ring — not hue alone — so the state survives without
+   colour perception, and the pick bar's live count is the numeric confirmation.
+   Distinct from `--selected`'s soft blurred glow; the two never co-occur anyway,
+   since Canvas suppresses selection styling while a session runs. */
+.tpl-block--picked {
+  outline: 2px solid var(--tpl-primary);
+  outline-offset: -1px;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--tpl-primary) 18%, transparent);
+  transition:
+    outline 150ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 150ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
 /* Selection — solid outline + soft outer glow */
 .tpl-block--selected {
   outline: 2px solid color-mix(in srgb, var(--tpl-primary) 60%, transparent);
@@ -344,13 +397,13 @@ function handleConditionToggle(): void {
 
 /* Action buttons — muted text, warm hover, press feedback */
 .tpl-block-action-btn {
-  color: var(--tpl-text-muted);
+  color: var(--tpl-chrome-text-muted);
   background-color: transparent;
 }
 
 .tpl-block-action-btn:hover {
   background-color: var(--tpl-bg-hover);
-  color: var(--tpl-text);
+  color: var(--tpl-chrome-text);
 }
 
 .tpl-block-action-btn:active {
