@@ -40,6 +40,10 @@ features:
     details: Define your brand once; new templates and blocks inherit colors, fonts, and layout.
     link: /guide/defaults
     linkText: Set defaults
+  - title: Test emails from the editor
+    details: Let users mail themselves the template they are editing, sent through your own infrastructure — one callback, no backend of ours involved.
+    link: /guide/test-email
+    linkText: Wire up test emails
   - title: JSON in, MJML out
     details: Portable JSON templates, MJML output. Render anywhere, send through any provider.
     link: /getting-started/how-rendering-works
