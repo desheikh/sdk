@@ -56,9 +56,9 @@ The `value` must include the syntax delimiters. For example, with Liquid syntax:
 
 The `group` and `description` fields are picker-only — they do not appear in the editor canvas, in autocomplete, or in the rendered MJML output. They are ignored if you only use `onRequest` for tag selection.
 
-## Sample values in previews
+## Sample values
 
-By default a preview shows each tag's **label** — `First Name` rather than the real recipient's name — which answers "which field goes here?" but doesn't read like an email anyone receives. Give a tag a `sample` and previews can render that instead:
+A tag can carry a `sample` — an example value that **preview surfaces** render in its place, so a preview reads like a delivered email instead of a list of field names:
 
 ```ts
 mergeTags: {
@@ -69,38 +69,9 @@ mergeTags: {
 }
 ```
 
-Setting `sample` is the whole opt-in — there is no flag to enable alongside it.
+Setting `sample` is the whole opt-in — there is no flag to enable alongside it. The value never leaves the preview: it is not written to the template, not returned by `getContent()`, not sent, and not present in MJML output. It also shows in the built-in picker, so an author can see what a tag will render before inserting it.
 
-### Where it applies
-
-**Preview surfaces only**, never while editing. Substitution happens in preview mode and in the test-email dialog's preview; on the editing canvas a tag always shows its label, so you keep seeing the field you inserted rather than a value you never typed.
-
-A **Sample / Label** switch appears beside the viewport toggle whenever a preview is showing, so you can flip between the realistic view and the field-name view. The choice lasts for the session.
-
-### Nothing appears until you configure a sample
-
-The switch renders **only when at least one configured tag declares a `sample`**, and previews default to Sample view only in that case. Configure none and the editor behaves exactly as it did before — Label view, no switch — so this feature is invisible until you opt in.
-
-### What changes visually
-
-The highlight follows the individual tag, not the view:
-
-| | In Sample view | In Label view |
-| --- | --- | --- |
-| Tag **with** a `sample` | the sample, as ordinary text — no highlight | its label, highlighted |
-| Tag **without** one | its label, **highlighted** | its label, highlighted |
-
-So a mixed template reads naturally where you've supplied data and stays visibly dynamic where you haven't — the remaining highlights double as a list of tags still missing a sample.
-
-### It is display-only
-
-`sample` never leaves the preview. It is not written to the template, not included in `getContent()`, not sent by the test-email feature, and not present in MJML or HTML output — those always carry the real token. Nothing you put in a `sample` can reach a recipient.
-
-Logic tags (`{% if %}` … `{% endif %}`) are unaffected: substitution replaces a value, it cannot evaluate a branch, so they stay visible as keyword badges in both views.
-
-::: tip
-`sample` is also shown in the built-in picker, so an author can see what a tag will render before inserting it.
-:::
+**How previews use it — the Sample / Label switch, which tags keep their highlight, and what happens on the editing canvas — is covered in [Preview Rendering](/guide/preview-rendering).** That page also documents `resolvePreview`, the hook for having your own backend resolve a preview, which is the only way to evaluate logic tags.
 
 ## Syntax presets
 

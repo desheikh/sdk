@@ -306,7 +306,10 @@ defineExpose({
       <div class="tpl:sticky tpl:top-0 tpl:z-40 tpl:h-0">
         <Transition name="tpl-restore-btn">
           <button
-            v-if="core.conditionPreview.hasHiddenBlocks.value"
+            v-if="
+              core.conditionPreview.hasHiddenBlocks.value &&
+              core.appliesConditionFilter.value
+            "
             class="tpl:absolute tpl:left-1/2 tpl:top-2 tpl:-translate-x-1/2 tpl:inline-flex tpl:items-center tpl:gap-1.5 tpl:rounded-full tpl:border tpl:px-3.5 tpl:py-1.5 tpl:text-xs tpl:font-medium tpl:whitespace-nowrap tpl:shadow-md tpl:hover:opacity-80"
             style="
               background-color: var(--tpl-warning-light);
@@ -314,6 +317,7 @@ defineExpose({
               border-color: var(--tpl-warning);
               backdrop-filter: blur(8px);
             "
+            data-testid="restore-hidden-blocks"
             @click="core.conditionPreview.reset()"
           >
             <RotateCcw :size="13" :stroke-width="2" />
@@ -324,7 +328,7 @@ defineExpose({
       <main class="tpl-main tpl:flex tpl:justify-center tpl:p-8">
         <Canvas
           :viewport="editor.state.viewport"
-          :content="editor.content.value"
+          :content="core.previewResolution.content.value"
           :selected-block-id="editor.state.selectedBlockId"
           :dark-mode="editor.state.darkMode"
           :preview-mode="editor.state.previewMode"

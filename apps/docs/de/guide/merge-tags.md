@@ -56,9 +56,9 @@ Der `value` muss die Syntax-Trennzeichen enthalten. Zum Beispiel mit Liquid-Synt
 
 Die Felder `group` und `description` sind ausschließlich für den Picker — sie erscheinen weder im Editor-Canvas, noch in der Autovervollständigung, noch in der gerenderten MJML-Ausgabe. Sie werden ignoriert, wenn Sie nur `onRequest` für die Tag-Auswahl verwenden.
 
-## Beispielwerte in Vorschauen
+## Beispielwerte
 
-Standardmäßig zeigt eine Vorschau die **Bezeichnung** jedes Tags — `First Name` statt des echten Empfängernamens. Das beantwortet die Frage „welches Feld steht hier?", liest sich aber nicht wie eine E-Mail, die jemand erhält. Geben Sie einem Tag ein `sample`, damit Vorschauen stattdessen diesen Wert anzeigen:
+Ein Tag kann ein `sample` tragen — einen Beispielwert, den **Vorschauflächen** an seiner Stelle anzeigen, sodass eine Vorschau wie eine zugestellte E-Mail liest statt wie eine Liste von Feldnamen:
 
 ```ts
 mergeTags: {
@@ -69,38 +69,9 @@ mergeTags: {
 }
 ```
 
-`sample` zu setzen ist die vollständige Aktivierung — es gibt keinen zusätzlichen Schalter.
+`sample` zu setzen ist die vollständige Aktivierung — es gibt keinen zusätzlichen Schalter. Der Wert verlässt die Vorschau nie: er wird nicht in die Vorlage geschrieben, nicht von `getContent()` zurückgegeben, nicht versendet und erscheint nicht in der MJML-Ausgabe. Er wird außerdem im integrierten Picker angezeigt, sodass Autoren vor dem Einfügen sehen, was ein Tag darstellen wird.
 
-### Wo es greift
-
-**Nur auf Vorschauflächen, niemals während der Bearbeitung.** Die Ersetzung geschieht im Vorschaumodus und in der Vorschau des Test-E-Mail-Dialogs; im Editor-Canvas zeigt ein Tag immer seine Bezeichnung, sodass Sie weiterhin das eingefügte Feld sehen und nicht einen Wert, den Sie nie eingegeben haben.
-
-Ein Umschalter **Beispiel / Bezeichnung** erscheint neben dem Viewport-Umschalter, sobald eine Vorschau angezeigt wird. Die Wahl gilt für die Sitzung.
-
-### Nichts erscheint, bis Sie ein `sample` konfigurieren
-
-Der Umschalter erscheint **nur, wenn mindestens ein konfiguriertes Tag ein `sample` deklariert**, und nur dann starten Vorschauen in der Ansicht „Beispiel". Konfigurieren Sie keines, verhält sich der Editor genau wie zuvor — Ansicht „Bezeichnung", kein Umschalter. Die Funktion bleibt also unsichtbar, bis Sie sie aktivieren.
-
-### Was sich visuell ändert
-
-Die Hervorhebung folgt dem einzelnen Tag, nicht der Ansicht:
-
-| | In der Ansicht „Beispiel" | In der Ansicht „Bezeichnung" |
-| --- | --- | --- |
-| Tag **mit** `sample` | der Beispielwert als gewöhnlicher Text — ohne Hervorhebung | die Bezeichnung, hervorgehoben |
-| Tag **ohne** `sample` | die Bezeichnung, **hervorgehoben** | die Bezeichnung, hervorgehoben |
-
-Eine gemischte Vorlage liest sich damit natürlich, wo Sie Daten hinterlegt haben, und bleibt sichtbar dynamisch, wo nicht — die verbleibenden Hervorhebungen sind gleichzeitig eine Liste der Tags, denen noch ein `sample` fehlt.
-
-### Ausschließlich zur Anzeige
-
-`sample` verlässt die Vorschau nie. Der Wert wird nicht in die Vorlage geschrieben, nicht in `getContent()` aufgenommen, nicht von der Test-E-Mail-Funktion versendet und erscheint nicht in der MJML- oder HTML-Ausgabe — dort steht immer das echte Token. Nichts, was Sie in ein `sample` schreiben, kann einen Empfänger erreichen.
-
-Logik-Tags (`{% if %}` … `{% endif %}`) sind nicht betroffen: Die Ersetzung tauscht einen Wert aus, sie kann keine Verzweigung auswerten. Sie bleiben daher in beiden Ansichten als Schlüsselwort-Badges sichtbar.
-
-::: tip
-`sample` wird auch im integrierten Picker angezeigt, sodass Autoren vor dem Einfügen sehen, was ein Tag darstellen wird.
-:::
+**Wie Vorschauen ihn verwenden — der Umschalter Beispiel / Bezeichnung, welche Tags ihre Hervorhebung behalten und was im Bearbeitungs-Canvas passiert — ist unter [Vorschau-Rendering](/de/guide/preview-rendering) beschrieben.** Diese Seite dokumentiert auch `resolvePreview`, den Hook, mit dem Ihr eigenes Backend eine Vorschau auflöst — der einzige Weg, Logik-Tags auszuwerten.
 
 ## Syntax-Presets
 
