@@ -6,7 +6,7 @@ import {
   createParagraphBlock,
   createTitleBlock,
 } from "@templatical/types";
-import { useAutoSave } from "../src/auto-save";
+import { useAutoSave, DEFAULT_AUTO_SAVE_DEBOUNCE_MS } from "../src/auto-save";
 import { useEditor } from "../src/editor";
 
 function makeContent(): TemplateContent {
@@ -20,6 +20,25 @@ describe("useAutoSave", () => {
 
   afterEach(() => {
     vi.useRealTimers();
+  });
+
+  /**
+   * The one default both entry points read — `init()` falls through to it, and
+   * `initCloud()` injects it explicitly. The editor package used to keep a
+   * second copy at 5000, which drifted from this one with nothing linking them.
+   */
+  it("defaults to DEFAULT_AUTO_SAVE_DEBOUNCE_MS, which is 2 seconds", () => {
+    expect(DEFAULT_AUTO_SAVE_DEBOUNCE_MS).toBe(2000);
+
+    const content = ref(makeContent());
+    const onChange = vi.fn();
+    useAutoSave({ content, isDirty: () => true, onChange });
+
+    content.value.settings.width = 700;
+    vi.advanceTimersByTime(DEFAULT_AUTO_SAVE_DEBOUNCE_MS - 1);
+    expect(onChange).not.toHaveBeenCalled();
+    vi.advanceTimersByTime(1);
+    expect(onChange).toHaveBeenCalledTimes(1);
   });
 
   it("calls onChange after debounce delay when content changes", () => {
@@ -501,6 +520,92 @@ describe("useAutoSave", () => {
 
       expect(onChange).not.toHaveBeenCalled();
       expect(editor.state.isDirty).toBe(false);
+    });
+  });
+
+  describe("driving a templates provider", () => {
+    /**
+     * How the editor package wires autosave: the debounced tick calls
+     * `editor.save()`, which patches the consumer's provider. Covered here
+     * because the interaction that matters — a save clears `isDirty`, and the
+     * *next* edit must still schedule — lives across both modules.
+     */
+    function setup() {
+      const title = createTitleBlock();
+      const content = makeContent();
+      content.blocks.push(title);
+      // The stored copy carries the same block ids, since `load()` replaces the
+      // editor's content with it — a stored template with different blocks would
+      // make every `updateBlock` below a silent no-op.
+      const template = {
+        id: "tpl_1",
+        content: JSON.parse(JSON.stringify(content)) as TemplateContent,
+      };
+      const save = vi.fn().mockResolvedValue(template);
+      const editor = useEditor({
+        content,
+        templates: {
+          load: vi.fn().mockResolvedValue(template),
+          create: vi.fn().mockResolvedValue(template),
+          save,
+        },
+      });
+      const autoSave = useAutoSave({
+        content: editor.content,
+        isDirty: () => editor.state.isDirty,
+        onChange: () => {
+          void editor.save();
+        },
+        debounce: 100,
+      });
+      return { editor, title, save, autoSave, template };
+    }
+
+    it("saves through the provider after the debounce", async () => {
+      const { editor, title, save } = setup();
+      await editor.load("tpl_1");
+
+      editor.updateBlock(title.id, { level: 3 });
+      expect(save).not.toHaveBeenCalled();
+
+      vi.advanceTimersByTime(100);
+      await Promise.resolve();
+
+      expect(save).toHaveBeenCalledTimes(1);
+      expect(save.mock.calls[0][0]).toBe("tpl_1");
+      expect(save.mock.calls[0][1].content.blocks[0]).toMatchObject({
+        id: title.id,
+        level: 3,
+      });
+    });
+
+    it("saves the first edit after a save cleared isDirty (#522)", async () => {
+      const { editor, title, save } = setup();
+      await editor.load("tpl_1");
+
+      editor.updateBlock(title.id, { level: 3 });
+      vi.advanceTimersByTime(100);
+      await Promise.resolve();
+      expect(editor.state.isDirty).toBe(false);
+
+      editor.updateBlock(title.id, { level: 4 });
+      vi.advanceTimersByTime(100);
+      await Promise.resolve();
+
+      expect(save).toHaveBeenCalledTimes(2);
+      expect(save.mock.calls[1][1].content.blocks[0]).toMatchObject({
+        level: 4,
+      });
+    });
+
+    it("does not save while paused for history navigation", () => {
+      const { editor, title, save, autoSave } = setup();
+
+      autoSave.pause();
+      editor.updateBlock(title.id, { level: 3 });
+      vi.advanceTimersByTime(100);
+
+      expect(save).not.toHaveBeenCalled();
     });
   });
 

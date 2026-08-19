@@ -7,6 +7,33 @@ const ptBR: typeof en = {
     openSource: "Código Aberto",
   },
 
+  // Header — nome do template + estado de salvamento. Exibido apenas quando um
+  // provedor de templates está configurado.
+  header: {
+    save: "Salvar",
+    saving: "Salvando...",
+    saved: "Salvo",
+    unsaved: "Não salvo",
+    saveFailed: "Falha ao salvar",
+    saveNoTemplate: "Carregue ou crie um template primeiro",
+    templateName: "Nome do template",
+    rename: "Renomear template",
+    untitled: "Sem título",
+    updatedAt: "Atualizado {time}",
+    createdAt: "Criado {time}",
+    updatedJustNow: "Atualizado agora mesmo",
+    createdJustNow: "Criado agora mesmo",
+  },
+
+  // Relative timestamps, shared by every surface that shows one: the header's
+  // updated line, saved blocks, comments and version history.
+  time: {
+    justNow: "Agora mesmo",
+    minutesAgo: "há {minutes}min",
+    hoursAgo: "há {hours}h",
+    daysAgo: "há {days}d",
+  },
+
   // History (undo/redo)
   history: {
     undo: "Desfazer",
@@ -654,11 +681,56 @@ const ptBR: typeof en = {
     collapse: "Recolher",
     expandPreview: "Expandir a prévia de {block}",
     collapsePreview: "Recolher a prévia de {block}",
-    time: {
-      justNow: "Agora mesmo",
-      minutesAgo: "há {minutes}min",
-      hoursAgo: "há {hours}h",
-      daysAgo: "há {days}d",
+  },
+  comments: {
+    button: "Comentários",
+    title: "Comentários",
+    placeholder: "Escreva um comentário...",
+    replyPlaceholder: "Escreva uma resposta...",
+    reply: "Responder",
+    resolve: "Resolver",
+    unresolve: "Reabrir",
+    delete: "Excluir",
+    edit: "Editar",
+    cancel: "Cancelar",
+    save: "Salvar",
+    noComments: "Nenhum comentário ainda",
+    noCommentsHint:
+      "Inicie uma conversa adicionando um comentário ao template ou a um bloco específico.",
+    deleteConfirm: "Excluir este comentário?",
+    filterAll: "Todos",
+    filterUnresolved: "Não resolvidos",
+    filterBlock: "Este bloco",
+    jumpToBlock: "Bloco",
+    ownedByYou: "Você",
+    edited: "editado",
+    resolvedBy: "Resolvido por {name}",
+    replyOne: "{count} Resposta",
+    replyMany: "{count} Respostas",
+    missingBlock: "Bloco ausente",
+    saveTemplateFirst: "Salve o template antes de comentar neste bloco.",
+  },
+  versionHistory: {
+    tooltip: "Histórico de versões",
+    dropdownTitle: "Histórico de versões",
+    empty: "Nenhuma versão ainda",
+    auto: "auto",
+    olderVersion: "Versão anterior",
+    newerVersion: "Versão mais recente",
+  },
+  versionPreview: {
+    message: "Você está visualizando uma versão anterior deste modelo.",
+    cancel: "Cancelar",
+    restore: "Restaurar esta versão",
+    restoreConfirm: {
+      title: "Restaurar esta versão?",
+      unsavedWithSave:
+        "Você tem alterações não salvas. Salve-as primeiro e elas ficarão no seu histórico — restaure sem salvar e elas serão perdidas.",
+      unsavedNoSave:
+        "Você tem alterações não salvas e nenhum lugar para salvá-las. Restaurar esta versão vai descartá-las.",
+      saveAndRestore: "Salvar e restaurar",
+      restoreAnyway: "Restaurar mesmo assim",
+      cancel: "Cancelar",
     },
   },
   previewResolution: {

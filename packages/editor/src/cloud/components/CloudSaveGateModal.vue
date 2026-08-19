@@ -18,8 +18,8 @@ const { t: cloudT } = useCloudI18nStrict();
 
 <template>
   <Transition
-    enter-active-class="tpl:transition-opacity tpl:duration-150"
-    leave-active-class="tpl:transition-opacity tpl:duration-150"
+    enter-active-class="tpl:transition-opacity"
+    leave-active-class="tpl:transition-opacity"
     enter-from-class="tpl:opacity-0"
     leave-to-class="tpl:opacity-0"
   >
@@ -32,7 +32,7 @@ const { t: cloudT } = useCloudI18nStrict();
       @click.self="emit('cancel')"
     >
       <div
-        class="tpl:flex tpl:max-h-[80vh] tpl:w-full tpl:max-w-md tpl:flex-col tpl:gap-4 tpl:rounded-lg tpl:border tpl:border-[var(--tpl-border)] tpl:bg-[var(--tpl-bg-elevated)] tpl:p-5 tpl:shadow-[var(--tpl-shadow-md)]"
+        class="tpl:flex tpl:max-h-[80vh] tpl:w-full tpl:max-w-md tpl:flex-col tpl:gap-4 tpl:rounded-lg tpl:border tpl:border-[var(--tpl-border)] tpl:bg-[var(--tpl-bg)] tpl:p-5 tpl:shadow-[var(--tpl-shadow-md)]"
       >
         <header class="tpl:flex tpl:items-center tpl:gap-2">
           <AlertTriangle
@@ -80,7 +80,7 @@ const { t: cloudT } = useCloudI18nStrict();
           </button>
           <button
             type="button"
-            class="tpl:rounded-md tpl:bg-[var(--tpl-danger)] tpl:px-3 tpl:py-1.5 tpl:text-xs tpl:font-medium tpl:text-white"
+            class="tpl:rounded-md tpl:bg-[var(--tpl-danger)] tpl:px-3 tpl:py-1.5 tpl:text-xs tpl:font-medium tpl:text-[var(--tpl-bg)]"
             @click="emit('confirm')"
           >
             {{ cloudT.saveGate.confirm }}

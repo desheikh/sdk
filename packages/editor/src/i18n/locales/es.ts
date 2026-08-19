@@ -7,6 +7,33 @@ const es: typeof en = {
     openSource: "Código abierto",
   },
 
+  // Header — nombre de la plantilla + estado de guardado. Solo se muestra cuando
+  // hay un proveedor de plantillas configurado.
+  header: {
+    save: "Guardar",
+    saving: "Guardando...",
+    saved: "Guardado",
+    unsaved: "Sin guardar",
+    saveFailed: "Error al guardar",
+    saveNoTemplate: "Carga o crea una plantilla primero",
+    templateName: "Nombre de la plantilla",
+    rename: "Cambiar el nombre de la plantilla",
+    untitled: "Sin título",
+    updatedAt: "Actualizado {time}",
+    createdAt: "Creado {time}",
+    updatedJustNow: "Actualizado ahora mismo",
+    createdJustNow: "Creado ahora mismo",
+  },
+
+  // Relative timestamps, shared by every surface that shows one: the header's
+  // updated line, saved blocks, comments and version history.
+  time: {
+    justNow: "Ahora mismo",
+    minutesAgo: "hace {minutes} min",
+    hoursAgo: "hace {hours} h",
+    daysAgo: "hace {days} d",
+  },
+
   // History (undo/redo)
   history: {
     undo: "Deshacer",
@@ -656,11 +683,56 @@ const es: typeof en = {
     collapse: "Contraer",
     expandPreview: "Expandir la vista previa de {block}",
     collapsePreview: "Contraer la vista previa de {block}",
-    time: {
-      justNow: "Ahora mismo",
-      minutesAgo: "hace {minutes} min",
-      hoursAgo: "hace {hours} h",
-      daysAgo: "hace {days} d",
+  },
+  comments: {
+    button: "Comentarios",
+    title: "Comentarios",
+    placeholder: "Escribe un comentario...",
+    replyPlaceholder: "Escribe una respuesta...",
+    reply: "Responder",
+    resolve: "Resolver",
+    unresolve: "Reabrir",
+    delete: "Eliminar",
+    edit: "Editar",
+    cancel: "Cancelar",
+    save: "Guardar",
+    noComments: "Aún no hay comentarios",
+    noCommentsHint:
+      "Inicia una conversación añadiendo un comentario a la plantilla o a un bloque concreto.",
+    deleteConfirm: "¿Eliminar este comentario?",
+    filterAll: "Todos",
+    filterUnresolved: "Sin resolver",
+    filterBlock: "Este bloque",
+    jumpToBlock: "Bloque",
+    ownedByYou: "Tú",
+    edited: "editado",
+    resolvedBy: "Resuelto por {name}",
+    replyOne: "{count} respuesta",
+    replyMany: "{count} respuestas",
+    missingBlock: "Bloque no encontrado",
+    saveTemplateFirst: "Guarda la plantilla antes de comentar en este bloque.",
+  },
+  versionHistory: {
+    tooltip: "Historial de versiones",
+    dropdownTitle: "Historial de versiones",
+    empty: "Todavía no hay versiones",
+    auto: "auto",
+    olderVersion: "Versión anterior",
+    newerVersion: "Versión más reciente",
+  },
+  versionPreview: {
+    message: "Estás viendo una versión anterior de esta plantilla.",
+    cancel: "Cancelar",
+    restore: "Restaurar esta versión",
+    restoreConfirm: {
+      title: "¿Restaurar esta versión?",
+      unsavedWithSave:
+        "Tienes cambios sin guardar. Guárdalos primero y se conservarán en el historial; si restauras sin guardar, se perderán.",
+      unsavedNoSave:
+        "Tienes cambios sin guardar y no hay dónde guardarlos. Al restaurar esta versión se perderán.",
+      saveAndRestore: "Guardar y restaurar",
+      restoreAnyway: "Restaurar de todos modos",
+      cancel: "Cancelar",
     },
   },
   previewResolution: {

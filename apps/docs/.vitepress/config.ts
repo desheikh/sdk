@@ -62,9 +62,12 @@ const enSidebar: DefaultTheme.SidebarMulti = {
         { text: "Collaboration", link: "/cloud/collaboration" },
         { text: "Comments", link: "/cloud/comments" },
         { text: "Media Library", link: "/cloud/media-library" },
+        { text: "Rendering", link: "/cloud/rendering" },
+        { text: "Saved Blocks", link: "/cloud/saved-blocks" },
         { text: "Template Scoring", link: "/cloud/template-scoring" },
+        { text: "Templates", link: "/cloud/templates" },
         { text: "Test Emails", link: "/cloud/test-emails" },
-        { text: "Snapshots", link: "/cloud/snapshots" },
+        { text: "Version History", link: "/cloud/version-history" },
       ],
     },
     {
@@ -96,9 +99,19 @@ const enSidebar: DefaultTheme.SidebarMulti = {
         { text: "Preview Rendering", link: "/guide/preview-rendering" },
         { text: "Display Conditions", link: "/guide/display-conditions" },
         { text: "Custom Blocks", link: "/guide/custom-blocks" },
-        { text: "Saved Blocks", link: "/guide/saved-blocks" },
-        { text: "Test Emails", link: "/guide/test-email" },
         { text: "Images", link: "/guide/images" },
+      ],
+    },
+    {
+      text: "Reference",
+      items: [
+        { text: "Block Types", link: "/guide/blocks" },
+        { text: "Sections & Columns", link: "/guide/sections-and-columns" },
+        { text: "Styling", link: "/guide/styling" },
+        {
+          text: "Programmatic Templates",
+          link: "/guide/programmatic-templates",
+        },
       ],
     },
     {
@@ -116,15 +129,15 @@ const enSidebar: DefaultTheme.SidebarMulti = {
       ],
     },
     {
-      text: "Reference",
+      text: "Connect your backend",
       items: [
-        { text: "Block Types", link: "/guide/blocks" },
-        { text: "Sections & Columns", link: "/guide/sections-and-columns" },
-        { text: "Styling", link: "/guide/styling" },
-        {
-          text: "Programmatic Templates",
-          link: "/guide/programmatic-templates",
-        },
+        { text: "Overview", link: "/backend/" },
+        { text: "Saving & Loading", link: "/backend/templates" },
+        { text: "Version History", link: "/backend/version-history" },
+        { text: "Comments", link: "/backend/comments" },
+        { text: "Saved Blocks", link: "/backend/saved-blocks" },
+        { text: "Test Emails", link: "/backend/test-email" },
+        { text: "Rendering & Export", link: "/backend/render" },
       ],
     },
     {
@@ -224,9 +237,12 @@ const deSidebar: DefaultTheme.SidebarMulti = {
         { text: "Zusammenarbeit", link: "/de/cloud/collaboration" },
         { text: "Kommentare", link: "/de/cloud/comments" },
         { text: "Medienbibliothek", link: "/de/cloud/media-library" },
+        { text: "Rendering", link: "/de/cloud/rendering" },
+        { text: "Gespeicherte Blöcke", link: "/de/cloud/saved-blocks" },
         { text: "Template-Bewertung", link: "/de/cloud/template-scoring" },
+        { text: "Templates", link: "/de/cloud/templates" },
         { text: "Test-E-Mails", link: "/de/cloud/test-emails" },
-        { text: "Snapshots", link: "/de/cloud/snapshots" },
+        { text: "Versionsverlauf", link: "/de/cloud/version-history" },
       ],
     },
     {
@@ -261,9 +277,19 @@ const deSidebar: DefaultTheme.SidebarMulti = {
         },
         { text: "Anzeigebedingungen", link: "/de/guide/display-conditions" },
         { text: "Benutzerdefinierte Blöcke", link: "/de/guide/custom-blocks" },
-        { text: "Gespeicherte Blöcke", link: "/de/guide/saved-blocks" },
-        { text: "Test-E-Mails", link: "/de/guide/test-email" },
         { text: "Bilder", link: "/de/guide/images" },
+      ],
+    },
+    {
+      text: "Referenz",
+      items: [
+        { text: "Blocktypen", link: "/de/guide/blocks" },
+        { text: "Sektionen & Spalten", link: "/de/guide/sections-and-columns" },
+        { text: "Styling", link: "/de/guide/styling" },
+        {
+          text: "Programmatische Templates",
+          link: "/de/guide/programmatic-templates",
+        },
       ],
     },
     {
@@ -281,15 +307,15 @@ const deSidebar: DefaultTheme.SidebarMulti = {
       ],
     },
     {
-      text: "Referenz",
+      text: "Backend anbinden",
       items: [
-        { text: "Blocktypen", link: "/de/guide/blocks" },
-        { text: "Sektionen & Spalten", link: "/de/guide/sections-and-columns" },
-        { text: "Styling", link: "/de/guide/styling" },
-        {
-          text: "Programmatische Templates",
-          link: "/de/guide/programmatic-templates",
-        },
+        { text: "Überblick", link: "/de/backend/" },
+        { text: "Speichern & Laden", link: "/de/backend/templates" },
+        { text: "Versionsverlauf", link: "/de/backend/version-history" },
+        { text: "Kommentare", link: "/de/backend/comments" },
+        { text: "Gespeicherte Blöcke", link: "/de/backend/saved-blocks" },
+        { text: "Test-E-Mails", link: "/de/backend/test-email" },
+        { text: "Rendering & Export", link: "/de/backend/render" },
       ],
     },
     {

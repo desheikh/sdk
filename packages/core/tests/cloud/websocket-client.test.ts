@@ -28,15 +28,19 @@ const mockPusherInstance = {
   disconnect: vi.fn(),
 };
 
-vi.mock('pusher-js', () => ({
-  default: function MockPusher(
-    this: typeof mockPusherInstance,
-    ..._args: unknown[]
-  ) {
-    Object.assign(this, mockPusherInstance);
-    return this;
-  },
-}));
+function pusherModuleMock() {
+  return {
+    default: function MockPusher(
+      this: typeof mockPusherInstance,
+      ..._args: unknown[]
+    ) {
+      Object.assign(this, mockPusherInstance);
+      return this;
+    },
+  };
+}
+
+vi.mock('pusher-js', () => pusherModuleMock());
 
 describe('resolveWebSocketConfig', () => {
   it('maps snake_case app_key to camelCase appKey', () => {

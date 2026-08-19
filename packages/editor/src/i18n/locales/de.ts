@@ -7,6 +7,33 @@ const de: typeof en = {
     openSource: "Open Source",
   },
 
+  // Header — Vorlagenname + Speicherstatus. Nur sichtbar, wenn ein
+  // Vorlagen-Provider konfiguriert ist.
+  header: {
+    save: "Speichern",
+    saving: "Speichern...",
+    saved: "Gespeichert",
+    unsaved: "Nicht gespeichert",
+    saveFailed: "Speichern fehlgeschlagen",
+    saveNoTemplate: "Laden oder erstellen Sie zuerst eine Vorlage",
+    templateName: "Vorlagenname",
+    rename: "Vorlage umbenennen",
+    untitled: "Unbenannt",
+    updatedAt: "Aktualisiert {time}",
+    createdAt: "Erstellt {time}",
+    updatedJustNow: "Gerade eben aktualisiert",
+    createdJustNow: "Gerade eben erstellt",
+  },
+
+  // Relative timestamps, shared by every surface that shows one: the header's
+  // updated line, saved blocks, comments and version history.
+  time: {
+    justNow: "Gerade eben",
+    minutesAgo: "vor {minutes} Min.",
+    hoursAgo: "vor {hours} Std.",
+    daysAgo: "vor {days} Tagen",
+  },
+
   // History (undo/redo)
   history: {
     undo: "Rückgängig",
@@ -661,11 +688,57 @@ const de: typeof en = {
     collapse: "Zuklappen",
     expandPreview: "Vorschau von {block} aufklappen",
     collapsePreview: "Vorschau von {block} zuklappen",
-    time: {
-      justNow: "Gerade eben",
-      minutesAgo: "vor {minutes} Min.",
-      hoursAgo: "vor {hours} Std.",
-      daysAgo: "vor {days} Tagen",
+  },
+  comments: {
+    button: "Kommentare",
+    title: "Kommentare",
+    placeholder: "Kommentar schreiben...",
+    replyPlaceholder: "Antwort schreiben...",
+    reply: "Antworten",
+    resolve: "Lösen",
+    unresolve: "Wiedereröffnen",
+    delete: "Löschen",
+    edit: "Bearbeiten",
+    cancel: "Abbrechen",
+    save: "Speichern",
+    noComments: "Noch keine Kommentare",
+    noCommentsHint:
+      "Starten Sie eine Konversation, indem Sie einen Kommentar zur Vorlage oder einem bestimmten Block hinzufügen.",
+    deleteConfirm: "Diesen Kommentar löschen?",
+    filterAll: "Alle",
+    filterUnresolved: "Ungelöst",
+    filterBlock: "Dieser Block",
+    jumpToBlock: "Block",
+    ownedByYou: "Sie",
+    edited: "bearbeitet",
+    resolvedBy: "Gelöst von {name}",
+    replyOne: "{count} Antwort",
+    replyMany: "{count} Antworten",
+    missingBlock: "Fehlender Block",
+    saveTemplateFirst:
+      "Speichern Sie die Vorlage, bevor Sie diesen Block kommentieren.",
+  },
+  versionHistory: {
+    tooltip: "Versionsverlauf",
+    dropdownTitle: "Versionsverlauf",
+    empty: "Noch keine Versionen",
+    auto: "auto",
+    olderVersion: "Ältere Version",
+    newerVersion: "Neuere Version",
+  },
+  versionPreview: {
+    message: "Sie sehen eine frühere Version dieser Vorlage.",
+    cancel: "Abbrechen",
+    restore: "Diese Version wiederherstellen",
+    restoreConfirm: {
+      title: "Diese Version wiederherstellen?",
+      unsavedWithSave:
+        "Sie haben ungespeicherte Änderungen. Speichern Sie sie zuerst, dann bleiben sie in Ihrem Verlauf — stellen Sie ohne Speichern wieder her, gehen sie verloren.",
+      unsavedNoSave:
+        "Sie haben ungespeicherte Änderungen und keinen Ort, um sie zu speichern. Beim Wiederherstellen dieser Version gehen sie verloren.",
+      saveAndRestore: "Speichern und wiederherstellen",
+      restoreAnyway: "Trotzdem wiederherstellen",
+      cancel: "Abbrechen",
     },
   },
   previewResolution: {

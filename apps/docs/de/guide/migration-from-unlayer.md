@@ -34,7 +34,8 @@ Sie können es auch von einem CDN laden:
 import { convertUnlayerTemplate } from '@templatical/import-unlayer';
 
 // Laden Sie Ihr Unlayer-Design-JSON (was auch immer editor.saveDesign zurückgegeben hat)
-const unlayerJson = await fetch('/api/unlayer-templates/123').then(r => r.json());
+const res = await fetch('/api/unlayer-templates/123');
+const unlayerJson = await res.json();
 
 // Ins Templatical-Format konvertieren
 const { content, report } = convertUnlayerTemplate(unlayerJson);
@@ -64,6 +65,7 @@ Unlayer-Inhaltstypen werden auf Templatical-Entsprechungen abgebildet:
 | Image | `image` | Konvertiert |
 | Button | `button` | Konvertiert |
 | Divider | `divider` | Konvertiert |
+| Spacer | `spacer` | Konvertiert |
 | Html | `html` | Konvertiert |
 | Menu | `menu` | Angenähert (Stile können abweichen) |
 | Social | `social` | Konvertiert (16 Plattformen abgebildet) |

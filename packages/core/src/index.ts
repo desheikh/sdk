@@ -14,7 +14,7 @@ export type {
 } from "./block-actions";
 
 // Auto-save
-export { useAutoSave } from "./auto-save";
+export { useAutoSave, DEFAULT_AUTO_SAVE_DEBOUNCE_MS } from "./auto-save";
 export type { UseAutoSaveOptions, UseAutoSaveReturn } from "./auto-save";
 
 // Display condition preview
@@ -35,3 +35,20 @@ export type {
 } from "./saved-blocks";
 export { createLocalStorageSavedBlocksProvider } from "./saved-blocks-local";
 export type { LocalStorageSavedBlocksOptions } from "./saved-blocks-local";
+
+// Version history (over a consumer-supplied storage provider)
+export { useVersionHistory } from "./version-history";
+export type {
+  UseVersionHistoryOptions,
+  UseVersionHistoryReturn,
+} from "./version-history";
+
+// Comments (over a consumer-supplied storage provider). Shared rather than
+// cloud-only: Cloud is one adapter behind the same contract, and
+// `useCommentListener` wires whatever realtime transport that adapter has, if any.
+export { useComments, useCommentListener } from "./comments";
+export type {
+  UseCommentsOptions,
+  UseCommentsReturn,
+  UseCommentListenerOptions,
+} from "./comments";

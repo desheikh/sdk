@@ -5,6 +5,32 @@ const fr: typeof en = {
     poweredBy: "Propulsé par",
     openSource: "Open Source",
   },
+
+  header: {
+    save: "Enregistrer",
+    saving: "Enregistrement...",
+    saved: "Enregistré",
+    unsaved: "Non enregistré",
+    saveFailed: "Échec de l'enregistrement",
+    saveNoTemplate: "Chargez ou créez d'abord un modèle",
+    templateName: "Nom du modèle",
+    rename: "Renommer le modèle",
+    untitled: "Sans titre",
+    updatedAt: "Modifié {time}",
+    createdAt: "Créé {time}",
+    updatedJustNow: "Modifié à l'instant",
+    createdJustNow: "Créé à l'instant",
+  },
+
+  // Relative timestamps, shared by every surface that shows one: the header's
+  // updated line, saved blocks, comments and version history.
+  time: {
+    justNow: "À l'instant",
+    minutesAgo: "il y a {minutes} min",
+    hoursAgo: "il y a {hours} h",
+    daysAgo: "il y a {days} j",
+  },
+
   history: {
     undo: "Annuler",
     redo: "Rétablir",
@@ -589,11 +615,56 @@ const fr: typeof en = {
     collapse: "Réduire",
     expandPreview: "Développer l'aperçu de {block}",
     collapsePreview: "Réduire l'aperçu de {block}",
-    time: {
-      justNow: "À l'instant",
-      minutesAgo: "il y a {minutes} min",
-      hoursAgo: "il y a {hours} h",
-      daysAgo: "il y a {days} j",
+  },
+  comments: {
+    button: "Commentaires",
+    title: "Commentaires",
+    placeholder: "Écrire un commentaire...",
+    replyPlaceholder: "Écrire une réponse...",
+    reply: "Répondre",
+    resolve: "Résoudre",
+    unresolve: "Réouvrir",
+    delete: "Supprimer",
+    edit: "Modifier",
+    cancel: "Annuler",
+    save: "Enregistrer",
+    noComments: "Aucun commentaire",
+    noCommentsHint:
+      "Démarrez une conversation en ajoutant un commentaire au modèle ou à un bloc précis.",
+    deleteConfirm: "Supprimer ce commentaire ?",
+    filterAll: "Tous",
+    filterUnresolved: "Non résolus",
+    filterBlock: "Ce bloc",
+    jumpToBlock: "Bloc",
+    ownedByYou: "Vous",
+    edited: "modifié",
+    resolvedBy: "Résolu par {name}",
+    replyOne: "{count} réponse",
+    replyMany: "{count} réponses",
+    missingBlock: "Bloc introuvable",
+    saveTemplateFirst: "Enregistrez le modèle avant de commenter ce bloc.",
+  },
+  versionHistory: {
+    tooltip: "Historique des versions",
+    dropdownTitle: "Historique des versions",
+    empty: "Aucune version pour l’instant",
+    auto: "auto",
+    olderVersion: "Version précédente",
+    newerVersion: "Version plus récente",
+  },
+  versionPreview: {
+    message: "Vous consultez une version antérieure de ce modèle.",
+    cancel: "Annuler",
+    restore: "Restaurer cette version",
+    restoreConfirm: {
+      title: "Restaurer cette version ?",
+      unsavedWithSave:
+        "Vous avez des modifications non enregistrées. Enregistrez-les d’abord et elles resteront dans l’historique ; restaurez sans enregistrer et elles seront perdues.",
+      unsavedNoSave:
+        "Vous avez des modifications non enregistrées et aucun endroit où les enregistrer. Restaurer cette version les fera disparaître.",
+      saveAndRestore: "Enregistrer, puis restaurer",
+      restoreAnyway: "Restaurer quand même",
+      cancel: "Annuler",
     },
   },
   previewResolution: {

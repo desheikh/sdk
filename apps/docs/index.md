@@ -3,7 +3,7 @@ layout: home
 hero:
   name: Templatical
   text: Email Editor for Your App
-  tagline: Drop a production-ready drag-and-drop email editor into any web application — host CSS and design systems can't break it. Source-available, framework-agnostic, and packed with features that are typically reserved for paid tiers in other editors.
+  tagline: Drop a production-ready drag-and-drop email editor into any web application — host CSS and design systems can't break it. Saving, version history, comments, test sends and rendering all plug into your own backend, through plain config objects you implement. Source-available and framework-agnostic.
   actions:
     - theme: brand
       text: Get Started
@@ -20,9 +20,13 @@ features:
     details: Register your own block types — static templates or live API data at preview time.
     link: /guide/custom-blocks
     linkText: Build a custom block
+  - title: Connect your own backend
+    details: Saving, version history, comments, saved blocks, test sends and rendering are each one config key holding methods you implement — against your stack, on your terms. All optional; the editor runs with none of them.
+    link: /backend/
+    linkText: See the provider contracts
   - title: Reusable saved blocks
     details: Let users save block groups and re-insert them across templates — backed by your own storage, or a bundled browser-local provider for zero setup.
-    link: /guide/saved-blocks
+    link: /backend/saved-blocks
     linkText: Set up saved blocks
   - title: Merge tags with pluggable syntax
     details: Handlebars, Liquid, JS literals, or your own — with human-readable labels in the canvas.
@@ -42,7 +46,7 @@ features:
     linkText: Set defaults
   - title: Test emails from the editor
     details: Let users mail themselves the template they are editing, sent through your own infrastructure — one callback, no backend of ours involved.
-    link: /guide/test-email
+    link: /backend/test-email
     linkText: Wire up test emails
   - title: JSON in, MJML out
     details: Portable JSON templates, MJML output. Render anywhere, send through any provider.

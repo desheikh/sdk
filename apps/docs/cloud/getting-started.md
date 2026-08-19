@@ -24,7 +24,7 @@ npm install @templatical/editor @templatical/media-library pusher-js
 `@templatical/media-library` provides the built-in media browser and `pusher-js` enables real-time collaboration. Both are optional peer dependencies — only needed when using `initCloud()`.
 
 ::: info Shadow DOM
-`initCloud()` inherits all shadow-DOM behavior from the editor — mounted inside a Shadow DOM by default for host-CSS isolation. The media browser, AI panels, comments, and snapshot UI all teleport into the editor's shadow-aware popover root, so no special handling is needed. Pass `shadowDom: false` to opt out. See the [Shadow DOM guide](/guide/shadow-dom).
+`initCloud()` inherits all shadow-DOM behavior from the editor — mounted inside a Shadow DOM by default for host-CSS isolation. The media browser, AI panels, comments, and version-history UI all teleport into the editor's shadow-aware popover root, so no special handling is needed. Pass `shadowDom: false` to opt out. See the [Shadow DOM guide](/guide/shadow-dom).
 :::
 
 ## Authentication Endpoint
@@ -87,6 +87,12 @@ const editor = await initCloud({
 
 The `auth.url` should point to the token endpoint you created above. The SDK handles token refresh automatically.
 
+::: info `initCloud()` is `init()` with Cloud's adapters
+It authenticates, fetches your plan, builds Cloud's `templates` / `render` / `versionHistory` / `savedBlocks` / `testEmail` providers, and then calls `init()` with them. There is one editor component, one editor core and one header behind both entry points, and the two return the **same** type — which is what makes "Cloud implements the same interfaces you would" checkable rather than just claimed.
+
+One consequence: the bootstrap runs *before* the editor mounts, so a failed handshake **rejects** `initCloud()` instead of mounting an editor showing an error overlay. Handle it like any other rejected promise. A session that dies later — a token refresh that cannot renew — still surfaces as an overlay, because by then there is an editor to cover.
+:::
+
 ## Configuration Options
 
 `initCloud()` accepts all the same options as `init()` (theme, locale, merge tags, custom blocks, etc.) plus Cloud-specific options:
@@ -109,11 +115,15 @@ const editor = await initCloud({
 
   // Callbacks
   onChange: (content) => { /* template changed */ },
-  onSave: (result) => { /* SaveResult: { templateId, html, mjml, content } */ },
   onError: (error) => { /* handle errors */ },
   onComment: (event) => { /* comment created/updated/deleted */ },
+  onCreate: (template) => { /* create() resolved — template.id is new */ },
+  onLoad: (template) => { /* load() resolved */ },
+  onUnmount: () => { /* the editor has been torn down */ },
 });
 ```
+
+Each Cloud-backed capability has its own page: [Templates](/cloud/templates), [Rendering](/cloud/rendering), [Saved Blocks](/cloud/saved-blocks), [Comments](/cloud/comments), [Version History](/cloud/version-history) and [Test Emails](/cloud/test-emails).
 
 ## Working with Templates
 
@@ -122,7 +132,12 @@ const editor = await initCloud({
 ```js
 const template = await editor.create();
 // template.id is now available for saving, sharing, etc.
+
+// Optionally seed it:
+await editor.create({ name: 'Spring campaign', content });
 ```
+
+`create()` takes the same `{ name?, content? }` input `init()` does.
 
 ### Load an Existing Template
 
@@ -133,14 +148,21 @@ const template = await editor.load('template-id-here');
 ### Save Changes
 
 ```js
-const result = await editor.save();
+const template = await editor.save();
 ```
+
+`save()` resolves to the stored `Template`. Rendering is its own provider, so it is separately callable and a save does not pay for a server render on every autosave tick.
+
+Autosave, the unsaved-changes guard and the automatic version every save records are covered in [Templates](/cloud/templates).
 
 ### Export
 
-The Cloud editor does **not** expose a client-side `toMjml()` method. The Templatical Cloud backend converts saved template JSON to MJML server-side, with additional processing the browser can't do alone (e.g., signed image URLs, asset rewriting). Trigger an export through the backend HTTP API after saving — see the headless API docs for endpoints.
+```js
+const mjml = await editor.toMjml();
+const html = await editor.toHtml();
+```
 
-If you want client-side MJML rendering instead (no backend round-trip), use the OSS editor (`init`, not `initCloud`) along with `@templatical/renderer`.
+Both render server-side, from the **saved** template — so each call saves first, and a session that has never created a template gets a clear rejection rather than an export of nothing. `initCloud()` does not take a `render` provider: see [Rendering](/cloud/rendering) for what Cloud's output adds over the browser's, and why the key is refused.
 
 ## Cleanup
 

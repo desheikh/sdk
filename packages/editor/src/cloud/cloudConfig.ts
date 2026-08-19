@@ -11,7 +11,6 @@ import type {
   McpConfig,
   MergeTagsConfig,
   SavedBlocksProvider,
-  SaveResult,
   Template,
   TestEmailProvider,
   TemplateContent,
@@ -25,6 +24,7 @@ import type {
   MediaRequestContext,
 } from "@templatical/media-library";
 import type { HtmlBlockPreviewConfig } from "../utils/resolveHtmlBlockPreview";
+import type { AutoSaveConfig } from "../types/auto-save";
 
 export interface TemplaticalCloudEditorConfig {
   container: string | HTMLElement;
@@ -90,6 +90,20 @@ export interface TemplaticalCloudEditorConfig {
    */
   smallScreenNotice?: boolean;
 
+  /**
+   * Show the template's name in the header, inline-editable. Defaults to `true`.
+   *
+   * Set to `false` when your store has no name column, or when your own chrome
+   * owns the name. Hides the field only — `create({ name })`, `setName()` and the
+   * `name` in each save patch keep working, so a headless caller or your own UI
+   * can still manage names.
+   *
+   * Without a `templates` provider the header renders no name field either way.
+   *
+   * @default true
+   */
+  templateNameField?: boolean;
+
   ai?: AiConfig | false;
   commenting?: boolean;
   collaboration?: CollaborationConfig;
@@ -112,8 +126,13 @@ export interface TemplaticalCloudEditorConfig {
    * leaving it exactly as-is (to keep your own) — never rewriting it.
    */
   savedBlocks?: boolean | SavedBlocksProvider;
-  autoSave?: boolean;
-  autoSaveDebounce?: number;
+  /**
+   * Save automatically, debounced. **The same key and the same type as
+   * `init()`** — `true`/`false`, or `{ debounce }` to set the cadence in one
+   * key. Unlike OSS it defaults to *on*, because a Cloud session always has a
+   * store to save to.
+   */
+  autoSave?: AutoSaveConfig;
 
   mergeTags?: MergeTagsConfig;
   logicTags?: LogicTagsConfig;
@@ -155,7 +174,21 @@ export interface TemplaticalCloudEditorConfig {
    */
   colors?: ColorsConfig;
   onChange?: (content: TemplateContent) => void;
-  onSave?: (result: SaveResult) => void;
+  /**
+   * Called whenever the editor's unsaved-changes state flips. **The same key and
+   * the same type as `init()`'s** — one editor, one set of keys.
+   */
+  onDirtyChange?: (isDirty: boolean) => void;
+  /**
+   * Warn before closing the tab with unsaved changes. On by default, since a
+   * Cloud session always has a store to save to. Set to `false` to own the
+   * prompt yourself; it can never cover client-side route changes either way,
+   * which is what {@link onDirtyChange} is for.
+   *
+   * @default true
+   */
+  unsavedChangesGuard?: boolean;
+
   onCreate?: (template: Template) => void;
   onLoad?: (template: Template) => void;
   onError?: (error: Error) => void;
@@ -186,6 +219,31 @@ export interface TemplaticalCloudEditorConfig {
    * keep your own) — never rewriting it.
    */
   testEmail?: TestEmailProvider;
+
+  // There is deliberately no `render` key here, unlike `init()`. Cloud renders
+  // server-side for test email, scheduled sends and API exports — its test-email
+  // adapter calls `exportHtml` directly — so a consumer-supplied renderer would
+  // have changed `toMjml()` / `toHtml()` and nothing else: what you previewed and
+  // exported would not be what Cloud delivered. Cloud's output is also a
+  // deliberate superset (a countdown resolves to a live server-generated GIF, a
+  // video gets a composited play button), so the consumer's would be worse for
+  // those blocks too. For your own MJML on Cloud, call
+  // `renderToMjml(editor.getContent())` from `@templatical/renderer` directly.
+  //
+  // There is deliberately no `templates`, `versionHistory` or `comments` key here,
+  // unlike `init()`. All three are keyed to the Cloud template id, which anchors
+  // collaboration, AI rewrite, scoring, the server-side export — and version
+  // history and comments themselves. A store Cloud never issued ids for would
+  // degrade all of them silently, and a consumer-supplied history would run
+  // alongside the automatic versions Cloud's templates adapter keeps recording:
+  // two stores, one invisible and billable. `bootstrapCloud` warns and ignores if
+  // any arrives from JavaScript. Bring your own with `init()`, where the whole set
+  // is yours.
+  //
+  // Nor is there a `user` key. Cloud's comment writes are signed against the auth
+  // token's `user` claim, so `initCloud()` fills `init({ user })` from there — a
+  // consumer-supplied identity could only disagree with the one the backend
+  // verifies. `commenting: false` is how you switch the feature off.
 
   /**
    * Resolves the template for preview surfaces — typically evaluating logic

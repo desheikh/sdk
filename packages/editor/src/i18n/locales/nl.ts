@@ -5,6 +5,32 @@ const nl: typeof en = {
     poweredBy: "Mogelijk gemaakt door",
     openSource: "Open Source",
   },
+
+  header: {
+    save: "Opslaan",
+    saving: "Opslaan...",
+    saved: "Opgeslagen",
+    unsaved: "Niet opgeslagen",
+    saveFailed: "Opslaan mislukt",
+    saveNoTemplate: "Laad of maak eerst een template",
+    templateName: "Templatenaam",
+    rename: "Template hernoemen",
+    untitled: "Naamloos",
+    updatedAt: "Bijgewerkt {time}",
+    createdAt: "Gemaakt {time}",
+    updatedJustNow: "Zojuist bijgewerkt",
+    createdJustNow: "Zojuist gemaakt",
+  },
+
+  // Relative timestamps, shared by every surface that shows one: the header's
+  // updated line, saved blocks, comments and version history.
+  time: {
+    justNow: "Zojuist",
+    minutesAgo: "{minutes} min geleden",
+    hoursAgo: "{hours} u geleden",
+    daysAgo: "{days} d geleden",
+  },
+
   history: {
     undo: "Ongedaan maken",
     redo: "Opnieuw",
@@ -590,11 +616,57 @@ const nl: typeof en = {
     collapse: "Inklappen",
     expandPreview: "Voorbeeld van {block} uitklappen",
     collapsePreview: "Voorbeeld van {block} inklappen",
-    time: {
-      justNow: "Zojuist",
-      minutesAgo: "{minutes} min geleden",
-      hoursAgo: "{hours} u geleden",
-      daysAgo: "{days} d geleden",
+  },
+  comments: {
+    button: "Opmerkingen",
+    title: "Opmerkingen",
+    placeholder: "Schrijf een opmerking...",
+    replyPlaceholder: "Schrijf een antwoord...",
+    reply: "Antwoorden",
+    resolve: "Oplossen",
+    unresolve: "Heropenen",
+    delete: "Verwijderen",
+    edit: "Bewerken",
+    cancel: "Annuleren",
+    save: "Opslaan",
+    noComments: "Nog geen opmerkingen",
+    noCommentsHint:
+      "Start een gesprek door een opmerking toe te voegen aan de template of aan een specifiek blok.",
+    deleteConfirm: "Deze opmerking verwijderen?",
+    filterAll: "Alle",
+    filterUnresolved: "Niet opgelost",
+    filterBlock: "Dit blok",
+    jumpToBlock: "Blok",
+    ownedByYou: "Jij",
+    edited: "bewerkt",
+    resolvedBy: "Opgelost door {name}",
+    replyOne: "{count} antwoord",
+    replyMany: "{count} antwoorden",
+    missingBlock: "Blok ontbreekt",
+    saveTemplateFirst:
+      "Sla de template op voordat je een opmerking bij dit blok plaatst.",
+  },
+  versionHistory: {
+    tooltip: "Versiegeschiedenis",
+    dropdownTitle: "Versiegeschiedenis",
+    empty: "Nog geen versies",
+    auto: "auto",
+    olderVersion: "Oudere versie",
+    newerVersion: "Nieuwere versie",
+  },
+  versionPreview: {
+    message: "U bekijkt een eerdere versie van dit sjabloon.",
+    cancel: "Annuleren",
+    restore: "Deze versie herstellen",
+    restoreConfirm: {
+      title: "Deze versie herstellen?",
+      unsavedWithSave:
+        "U hebt niet-opgeslagen wijzigingen. Sla ze eerst op en ze blijven in uw geschiedenis — herstelt u zonder op te slaan, dan gaan ze verloren.",
+      unsavedNoSave:
+        "U hebt niet-opgeslagen wijzigingen en nergens om ze op te slaan. Bij het herstellen van deze versie gaan ze verloren.",
+      saveAndRestore: "Opslaan en herstellen",
+      restoreAnyway: "Toch herstellen",
+      cancel: "Annuleren",
     },
   },
   previewResolution: {
