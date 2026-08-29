@@ -210,6 +210,38 @@ describe("convertElement — images", () => {
     expect(autoAttr.block.height).toBeUndefined();
     expect(autoStyle.block.height).toBeUndefined();
   });
+
+  // Rounded avatars are common in imported templates, and there the radius is
+  // the whole shape: dropping it turns a circle back into a square.
+  it("carries a px corner radius from the style", () => {
+    const { $, $el } = firstEl(
+      '<img src="x" width="120" style="border-radius:60px" />',
+      "img",
+    );
+    const r = convertElement($el, $)!;
+    if (r.block.type !== "image") throw new Error();
+    expect(r.block.borderRadius).toBe(60);
+  });
+
+  it("leaves the radius unset for a square image, or a non-px radius", () => {
+    const none = (() => {
+      const { $, $el } = firstEl('<img src="x" width="120" />', "img");
+      return convertElement($el, $)!;
+    })();
+    // `border-radius:50%` is the other common way to write a circle, but the
+    // block's radius is px-only, so there is nothing faithful to import.
+    const percent = (() => {
+      const { $, $el } = firstEl(
+        '<img src="x" style="border-radius:50%" />',
+        "img",
+      );
+      return convertElement($el, $)!;
+    })();
+    if (none.block.type !== "image") throw new Error();
+    if (percent.block.type !== "image") throw new Error();
+    expect(none.block.borderRadius).toBeUndefined();
+    expect(percent.block.borderRadius).toBeUndefined();
+  });
 });
 
 describe("convertElement — anchors", () => {

@@ -284,6 +284,7 @@ function convertImage(descriptor: BeeFreeeModuleDescriptor): Block {
     // No default, unlike width: an absent height is what keeps the aspect
     // ratio, and BeeFree's "auto" parses to 0, which reads the same way.
     height: parsePxValue(image.height) || undefined,
+    borderRadius: parsePxValue(image.style?.["border-radius"]) || undefined,
     align: toAlign(image.style?.["text-align"], "center"),
     linkUrl: image.href || undefined,
     styles: makeStyles(descriptor),

@@ -181,6 +181,34 @@ describe("convertModule", () => {
       expect(auto.height).toBeUndefined();
     });
 
+    // BeeFree keeps the radius in the image's own `style` map rather than
+    // alongside width/height, so it is read from a different place than every
+    // other image property here.
+    it("carries a px corner radius from the image style", () => {
+      const warnings: string[] = [];
+      const rounded = convertModule(
+        makeModule("mailup-bee-newsletter-modules-image", {
+          image: {
+            src: "https://x/p.jpg",
+            width: "120px",
+            style: { "border-radius": "60px" },
+          },
+        }),
+        warnings,
+      ).block;
+      const square = convertModule(
+        makeModule("mailup-bee-newsletter-modules-image", {
+          image: { src: "https://x/p.jpg", width: "120px" },
+        }),
+        warnings,
+      ).block;
+
+      if (rounded.type !== "image" || square.type !== "image")
+        throw new Error("expected image blocks");
+      expect(rounded.borderRadius).toBe(60);
+      expect(square.borderRadius).toBeUndefined();
+    });
+
     it("creates default block when no image descriptor", () => {
       const warnings: string[] = [];
       const mod = makeModule("mailup-bee-newsletter-modules-image", {});

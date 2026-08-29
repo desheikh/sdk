@@ -218,3 +218,63 @@ describe("ImageToolbar height control", () => {
     expect(options).toEqual([fr.image.heightAuto, fr.image.heightCustom]);
   });
 });
+
+/**
+ * Unlike height, the radius is a bare number field: 0 is a real answer (square
+ * corners), so there is no "no opinion" state to keep distinguishable and an
+ * emptied field committing 0 is what the author meant.
+ */
+describe("ImageToolbar corner radius control", () => {
+  const radiusInput = (w: ReturnType<typeof mountIt>) =>
+    w.find('[data-testid="image-border-radius-input"]');
+
+  it("reads 0 when the block stores no radius", () => {
+    const wrapper = mountIt(createImageBlock());
+    expect((radiusInput(wrapper).element as HTMLInputElement).value).toBe("0");
+  });
+
+  it("reads the stored radius", () => {
+    const wrapper = mountIt(createImageBlock({ borderRadius: 60 }));
+    expect((radiusInput(wrapper).element as HTMLInputElement).value).toBe("60");
+  });
+
+  it("typing a radius commits it as a number", async () => {
+    const wrapper = mountIt(createImageBlock());
+
+    await radiusInput(wrapper).setValue("60");
+
+    const [update] = wrapper.emitted("update")![0] as [Partial<ImageBlock>];
+    expect(update.borderRadius).toBe(60);
+  });
+
+  it("clearing the field commits 0 rather than keeping the old radius", async () => {
+    const wrapper = mountIt(createImageBlock({ borderRadius: 60 }));
+
+    await radiusInput(wrapper).setValue("");
+
+    const [update] = wrapper.emitted("update")![0] as [Partial<ImageBlock>];
+    expect(update.borderRadius).toBe(0);
+  });
+
+  // `min="0"` only drives constraint validation — a number input still reports
+  // "-5" as its value, so the guard is what keeps it out of the block. Letters
+  // never reach the guard: the input sanitizes those to "", which is the
+  // clearing case above.
+  it("ignores a negative radius", async () => {
+    const wrapper = mountIt(createImageBlock({ borderRadius: 60 }));
+
+    await radiusInput(wrapper).setValue("-5");
+
+    expect(wrapper.emitted("update")).toBeUndefined();
+  });
+
+  // French, not English: an `en` assertion passes against a hardcoded label.
+  it("translates the label", () => {
+    const wrapper = mountEditor(ImageToolbar, {
+      props: { block: createImageBlock({ borderRadius: 60 }) },
+      provides: { [TRANSLATIONS_KEY]: fr },
+    });
+
+    expect(wrapper.text()).toContain(fr.image.borderRadius);
+  });
+});

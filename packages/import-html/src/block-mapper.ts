@@ -173,6 +173,9 @@ function convertImage($el: Cheerio<Element>): Block {
     alt,
     width,
     height,
+    // A percentage radius (the other common way to write a circle) parses to
+    // 0 here, which is the same as square — the block's radius is px-only.
+    borderRadius: parsePxValue(styles["border-radius"]) || undefined,
     align: parseAlignment(styles["text-align"], "center"),
     styles: {
       padding: readPaddingFromStyles(styles),

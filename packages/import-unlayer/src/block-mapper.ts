@@ -255,6 +255,7 @@ function convertImage(values: UnlayerContentValues): Block {
     width: src?.width ? Math.round(src.width) : 600,
     // No default, unlike width: an absent height keeps the aspect ratio.
     height: src?.height ? Math.round(src.height) : undefined,
+    borderRadius: parsePxValue(values.borderRadius) || undefined,
     align: toAlign(values.textAlign, "center"),
     linkUrl: action?.href || undefined,
     linkOpenInNewTab: action?.target === "_blank" || undefined,

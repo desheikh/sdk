@@ -167,6 +167,27 @@ describe("convertContent", () => {
       expect(zero.height).toBeUndefined();
     });
 
+    // `values.borderRadius` is shared with the button mapper: Unlayer keeps one
+    // flat values bag per content type, so the same key carries the image's
+    // radius here and the button's there.
+    it("carries a px corner radius, and leaves it unset otherwise", () => {
+      const rounded = convertContent(
+        makeContent("image", {
+          src: { url: "u", width: 120 },
+          borderRadius: "60px",
+        }),
+        [],
+      ).block;
+      const square = convertContent(
+        makeContent("image", { src: { url: "u", width: 120 } }),
+        [],
+      ).block;
+      if (rounded.type !== "image" || square.type !== "image")
+        throw new Error("expected image blocks");
+      expect(rounded.borderRadius).toBe(60);
+      expect(square.borderRadius).toBeUndefined();
+    });
+
     it("rounds a fractional src.height", () => {
       const { block } = convertContent(
         makeContent("image", { src: { url: "u", width: 480, height: 199.6 } }),

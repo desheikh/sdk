@@ -88,6 +88,15 @@ function updateCustomHeight(raw: string): void {
   updateField("height", n);
 }
 
+function updateBorderRadius(raw: string): void {
+  // Rejects negatives only, where the height and width guards below also
+  // reject 0. Here 0 is square — a real answer — so an emptied field
+  // (`Number("") === 0`) commits it instead of keeping the old radius.
+  const n = Number(raw);
+  if (!Number.isFinite(n) || n < 0) return;
+  updateField("borderRadius", n);
+}
+
 function updateCustomWidth(raw: string): void {
   // Guard against empty / NaN / non-positive input. An empty number field
   // yields Number("") === 0, which would emit width: 0 and render an
@@ -286,6 +295,20 @@ const { isOver } = useImageDrop({
         :value="block.height"
         min="20"
         @input="updateCustomHeight(($event.target as HTMLInputElement).value)"
+      />
+      <span :class="inputSuffixClass">px</span>
+    </div>
+  </div>
+  <div class="tpl:mb-3.5">
+    <label :class="labelClass">{{ t.image.borderRadius }}</label>
+    <div class="tpl:flex tpl:items-stretch">
+      <input
+        type="number"
+        data-testid="image-border-radius-input"
+        :class="inputGroupInputClass"
+        :value="block.borderRadius ?? 0"
+        min="0"
+        @input="updateBorderRadius(($event.target as HTMLInputElement).value)"
       />
       <span :class="inputSuffixClass">px</span>
     </div>
