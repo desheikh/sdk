@@ -223,24 +223,59 @@ describe("convertElement — images", () => {
     expect(r.block.borderRadius).toBe(60);
   });
 
-  it("leaves the radius unset for a square image, or a non-px radius", () => {
-    const none = (() => {
-      const { $, $el } = firstEl('<img src="x" width="120" />', "img");
-      return convertElement($el, $)!;
-    })();
-    // `border-radius:50%` is the other common way to write a circle, but the
-    // block's radius is px-only, so there is nothing faithful to import.
-    const percent = (() => {
-      const { $, $el } = firstEl(
-        '<img src="x" style="border-radius:50%" />',
-        "img",
-      );
-      return convertElement($el, $)!;
-    })();
-    if (none.block.type !== "image") throw new Error();
-    if (percent.block.type !== "image") throw new Error();
-    expect(none.block.borderRadius).toBeUndefined();
-    expect(percent.block.borderRadius).toBeUndefined();
+  function imageFrom(html: string) {
+    const { $, $el } = firstEl(html, "img");
+    const r = convertElement($el, $)!;
+    if (r.block.type !== "image") throw new Error("expected an image block");
+    return r.block;
+  }
+
+  it("leaves the radius unset for a square image", () => {
+    expect(
+      imageFrom('<img src="x" width="120" />').borderRadius,
+    ).toBeUndefined();
+  });
+
+  // `border-radius:50%` is the idiomatic way to write a circular avatar, and
+  // the whole point of importing a radius is that the circle survives. It
+  // resolves against the width the template stated, so a 120px square lands on
+  // 60 — the same block a hand-authored `60px` produces.
+  it("resolves a percentage radius against the stated width", () => {
+    expect(
+      imageFrom('<img src="x" width="120" style="border-radius:50%" />')
+        .borderRadius,
+    ).toBe(60);
+  });
+
+  // The shorter side, so a wide image becomes a pill rather than acquiring a
+  // radius larger than its own height.
+  it("resolves a percentage against the shorter side when both are known", () => {
+    expect(
+      imageFrom(
+        '<img src="x" width="600" height="200" style="border-radius:50%" />',
+      ).borderRadius,
+    ).toBe(100);
+  });
+
+  // 600 is `convertImage`'s fallback, not something the template said. Resolving
+  // against it would invent a 300px radius out of nothing.
+  it("drops a percentage radius when no width was stated", () => {
+    expect(
+      imageFrom('<img src="x" style="border-radius:50%" />').borderRadius,
+    ).toBeUndefined();
+  });
+
+  // Invalid CSS, and the editor's own toolbar refuses it — so it must not
+  // arrive through the importer either.
+  it("drops a negative radius", () => {
+    expect(
+      imageFrom('<img src="x" width="120" style="border-radius:-5px" />')
+        .borderRadius,
+    ).toBeUndefined();
+    expect(
+      imageFrom('<img src="x" width="120" style="border-radius:-50%" />')
+        .borderRadius,
+    ).toBeUndefined();
   });
 });
 

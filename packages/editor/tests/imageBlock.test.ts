@@ -22,7 +22,10 @@ function baseProvide() {
 }
 
 describe("ImageBlock alignment (regression: #111)", () => {
-  function mountImage(align: "left" | "center" | "right", width: number | "full") {
+  function mountImage(
+    align: "left" | "center" | "right",
+    width: number | "full",
+  ) {
     const block = createImageBlock({
       src: "https://picsum.photos/600/400",
       width,
@@ -216,9 +219,25 @@ describe("ImageBlock corner radius", () => {
         borderRadius: 120,
       }),
     );
-    expect((wrapper.find("img").element as HTMLElement).style.borderRadius).toBe(
-      "120px",
+    expect(
+      (wrapper.find("img").element as HTMLElement).style.borderRadius,
+    ).toBe("120px");
+  });
+
+  // Hand-authored JSON is the only way in — the toolbar and all three
+  // importers refuse it — and the renderer omits the attribute for it, so the
+  // canvas must too rather than promising corners the export will not deliver.
+  it("leaves the img radius unset for a negative radius", () => {
+    const wrapper = mountImage(
+      createImageBlock({
+        src: "https://picsum.photos/400/400",
+        width: 240,
+        borderRadius: -5,
+      }),
     );
+    expect(
+      (wrapper.find("img").element as HTMLElement).style.borderRadius,
+    ).toBe("");
   });
 
   it("leaves the img radius unset for 0 and for no radius at all", () => {

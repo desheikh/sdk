@@ -15,6 +15,6 @@ Sections, section wrappers and buttons can round their corners. Images could not
 
 For a circle, use a square image and a radius of at least half its width. `999` is the usual shorthand.
 
-The three importers now read a px `border-radius` off an image, so a rounded avatar survives the trip across. A percentage radius like `50%` comes in as no radius, since the block only stores pixels.
+The three importers now read an image's `border-radius`, so a rounded avatar survives the trip across. Because the block stores pixels only, a percentage — `50%`, the idiomatic way to write a circle — resolves against the dimensions the source template stated, taking the shorter side so a wide image becomes a pill rather than gaining a radius larger than its own height. A percentage on an image whose width the template never stated is dropped rather than resolved against the importer's fallback width.
 
 One caveat: Outlook on Windows ignores `border-radius` and shows square corners. Treat it as a nice-to-have rather than something a layout depends on.

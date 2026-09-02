@@ -153,7 +153,7 @@ interface ImageBlock extends BaseBlock {
   /** Ohne Angabe wird die Höhe aus der Breite abgeleitet, das Seitenverhältnis bleibt erhalten. */
   height?: number;
   align: 'left' | 'center' | 'right';
-  /** Corner radius in px. Omitted/0 = square corners. */
+  /** Eckenradius in px. Ohne Angabe oder 0 bleiben die Ecken eckig. */
   borderRadius?: number;
   linkUrl?: string;
   linkOpenInNewTab?: boolean;
