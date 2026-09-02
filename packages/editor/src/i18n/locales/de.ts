@@ -356,6 +356,11 @@ const de: typeof en = {
     empty: "Tabelle hinzufügen",
   },
 
+  // Toolbar - Paragraph
+  paragraph: {
+    paragraphSpacing: "Absatzabstand",
+  },
+
   // Toolbar - Spacer
   spacer: {
     height: "Höhe",

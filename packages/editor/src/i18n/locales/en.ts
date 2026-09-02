@@ -351,6 +351,11 @@ export default {
     empty: "Add a table",
   },
 
+  // Toolbar - Paragraph
+  paragraph: {
+    paragraphSpacing: "Paragraph Spacing",
+  },
+
   // Toolbar - Spacer
   spacer: {
     height: "Height",
