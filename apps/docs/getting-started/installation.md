@@ -326,6 +326,34 @@ import type {
 } from "@templatical/types";
 ```
 
+## Release tarballs
+
+Every GitHub release carries the same tarballs that go to npm, one per package. Install from those when a build can't reach the registry, or when your dependencies have to come from URLs you vet yourself.
+
+```json
+{
+  "dependencies": {
+    "@templatical/renderer": "https://github.com/templatical/sdk/releases/download/v0.30.0/templatical-renderer-0.30.0.tgz"
+  }
+}
+```
+
+The file is the one npm would have served you, so nothing about the package behaves differently.
+
+Two things to know:
+
+**Pin the packages you depend on indirectly, too.** `@templatical/renderer` and the three importers depend on `@templatical/types`, and a tarball can only refer to it by version number — so your package manager will still go looking for that version on the registry. Point it at a tarball as well:
+
+```yaml
+# pnpm-workspace.yaml
+overrides:
+  '@templatical/types': https://github.com/templatical/sdk/releases/download/v0.30.0/templatical-types-0.30.0.tgz
+```
+
+npm and Yarn do the same thing with `overrides` and `resolutions` in `package.json`. `@templatical/editor` needs none of this — it bundles everything it uses.
+
+**The source archives on that page are not a substitute.** "Source code (zip)" and "Source code (tar.gz)" are snapshots of the repository, as is a `github:templatical/sdk` dependency. Neither contains a built `dist/`, and both refer to sibling packages as `workspace:*`, which resolves to nothing outside this repo.
+
 ## CDN
 
 If you prefer not to use a package manager, load the editor directly via script tags:

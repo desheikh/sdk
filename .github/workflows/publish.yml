@@ -106,11 +106,29 @@ jobs:
             echo "::warning::Could not generate aggregated notes for $VERSION — using a minimal release body."
             printf 'Full changelog: https://docs.templatical.com/changelog\n' > release-notes.md
           fi
+          # Attach the npm tarballs so the packages can be installed without the
+          # registry. `pnpm pack` writes the same file changeset publish just
+          # sent to npm: built, and with every `workspace:*` replaced by a real
+          # version. A source archive of this repo has neither.
+          mkdir -p release-assets
+          while read -r NAME; do
+            if ! pnpm --filter "$NAME" pack --pack-destination release-assets; then
+              echo "::warning::Could not pack $NAME — the release will not carry its tarball."
+            fi
+          done < <(printf '%s' "$PUBLISHED_PACKAGES" | jq -r '.[].name')
+          # Same reasoning as the notes fallback above: the packages are on npm
+          # either way, so a release missing an asset beats no release at all.
+          # nullglob keeps an empty match from reaching gh as a literal path.
+          shopt -s nullglob
+          ASSETS=(release-assets/*.tgz)
+          echo "Attaching ${#ASSETS[@]} tarball(s) to v$VERSION."
+
           gh release create "v$VERSION" \
             --title "v$VERSION" \
             --notes-file release-notes.md \
-            --target "$GITHUB_SHA"
-          rm -f release-notes.md
+            --target "$GITHUB_SHA" \
+            "${ASSETS[@]}"
+          rm -rf release-notes.md release-assets
 
       - name: Trigger marketing-site rebuild
         if: steps.changesets.outputs.published == 'true'
