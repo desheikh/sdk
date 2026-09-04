@@ -333,12 +333,12 @@ Jedes GitHub-Release enthält dieselben Tarballs, die auch an npm gehen — eine
 ```json
 {
   "dependencies": {
-    "@templatical/renderer": "https://github.com/templatical/sdk/releases/download/v0.30.0/templatical-renderer-0.30.0.tgz"
+    "@templatical/renderer": "https://github.com/templatical/sdk/releases/download/v<version>/templatical-renderer-<version>.tgz"
   }
 }
 ```
 
-Es ist dieselbe Datei, die npm ausgeliefert hätte — das Paket verhält sich also identisch.
+`<version>` ist die Paketversion, das Tag dieselbe mit einem vorangestellten `v`. Jede veröffentlichte Version hat eines auf der [Releases-Seite](https://github.com/templatical/sdk/releases). Es ist dieselbe Datei, die npm ausgeliefert hätte — das Paket verhält sich also identisch.
 
 Drei Dinge sollten Sie wissen:
 
@@ -347,7 +347,7 @@ Drei Dinge sollten Sie wissen:
 ```yaml
 # pnpm-workspace.yaml
 overrides:
-  '@templatical/types': https://github.com/templatical/sdk/releases/download/v0.30.0/templatical-types-0.30.0.tgz
+  '@templatical/types': https://github.com/templatical/sdk/releases/download/v<version>/templatical-types-<version>.tgz
 ```
 
 npm und Yarn erledigen dasselbe über `overrides` bzw. `resolutions` in der `package.json`. `@templatical/editor` benötigt nichts davon — es bündelt alles, was es verwendet.
