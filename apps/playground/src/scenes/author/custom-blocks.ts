@@ -1,0 +1,40 @@
+import type { Scene } from "../types";
+import { AUTHOR_TESTIMONIAL, customBlockCanvas } from "./shared";
+
+export const customBlocks: Scene = {
+  id: "custom-blocks",
+  title: "Custom blocks",
+  job: "Register your own block type",
+  initKey: "customBlocks",
+  summary: "init({ customBlocks }) — one registered block on the palette.",
+  catalog: "oss",
+  group: "configure",
+  docs: "/guide/custom-blocks",
+  pointer: {
+    selector: '[data-palette-type="custom:testimonial"]',
+    root: "editor",
+    side: "right",
+    replaces: "palette",
+  },
+  content: () => customBlockCanvas(),
+  config: () => ({
+    customBlocks: [AUTHOR_TESTIMONIAL],
+  }),
+  snippet: `import { init } from "@templatical/editor";
+import "@templatical/editor/style.css";
+
+const editor = await init({
+  container: document.getElementById("editor"),
+  customBlocks: [
+    {
+      type: "testimonial",
+      name: "Testimonial",
+      fields: [
+        { type: "textarea", key: "quote", label: "Quote", required: true },
+        { type: "text", key: "authorName", label: "Author Name", required: true },
+      ],
+      template: "<div>{{ quote }} — {{ authorName }}</div>",
+    },
+  ],
+});`,
+};
