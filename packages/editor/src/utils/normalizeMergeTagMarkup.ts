@@ -309,6 +309,18 @@ export function normalizeContentForConfig(
   );
 }
 
+/** {@link normalizeContentForConfig} for a single block. */
+export function normalizeBlockForConfig(
+  block: Block,
+  mergeTags: MergeTagsConfig | undefined,
+): Block {
+  return normalizeBlock(
+    block,
+    mergeTags?.tags ?? [],
+    resolveSyntax(mergeTags?.syntax),
+  );
+}
+
 /**
  * Wrap a `TemplatesProvider` so content arriving from the store is normalized
  * before the editor ever sees it.

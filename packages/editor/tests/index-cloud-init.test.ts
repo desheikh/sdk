@@ -20,6 +20,7 @@
 import { DEFAULT_AUTO_SAVE_DEBOUNCE_MS } from "@templatical/core";
 import {
   createDefaultTemplateContent,
+  createParagraphBlock,
   createSlotBlock,
 } from "@templatical/types";
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
@@ -324,6 +325,7 @@ describe("initCloud — a thin wrapper over init()", () => {
       "create",
       "getContent",
       "getCustomBlockStylesheet",
+      "insertBlock",
       "isDirty",
       "load",
       "renderCustomBlock",
@@ -417,6 +419,32 @@ describe("OSS init — instance methods", () => {
     await expect(instance.renderCustomBlock({} as never)).rejects.toThrow(
       /not ready/i,
     );
+
+    // Before mount there is no editor to insert into.
+    expect(instance.insertBlock(createParagraphBlock())).toBeNull();
+    // A slot is rejected even here, as setContent would reject it.
+    expect(() => instance.insertBlock(createSlotBlock())).toThrow(/slot/);
+    expect(instance.getContent()).toEqual(next);
+  });
+
+  it("post-ready: insertBlock converts bare merge tags before handing the block over", async () => {
+    const fakeEditor = {
+      getContent: vi.fn(() => createDefaultTemplateContent()),
+      insertBlock: vi.fn(() => "inserted-id"),
+    };
+    const { instance } = await mountOss(fakeEditor);
+    const block = createParagraphBlock({
+      content: "<p>Hi {{first_name}}</p>",
+    });
+
+    expect(instance.insertBlock(block)).toBe("inserted-id");
+
+    const handed = fakeEditor.insertBlock.mock.calls[0][0] as {
+      id: string;
+      content: string;
+    };
+    expect(handed.id).toBe(block.id);
+    expect(handed.content).toContain('data-merge-tag="{{first_name}}"');
   });
 
   it("post-ready: methods delegate to the editor instance", async () => {
