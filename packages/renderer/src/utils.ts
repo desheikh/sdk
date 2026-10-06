@@ -13,8 +13,16 @@
  * https://documentation.mjml.io/
  */
 
-import type { BorderRadiusValue, BorderValue } from "@templatical/types";
-import { toBorderDeclarations, toBorderRadiusCss } from "@templatical/types";
+import type {
+  BorderRadiusValue,
+  BorderValue,
+  SpacingValue,
+} from "@templatical/types";
+import {
+  toBorderCss,
+  toBorderDeclarations,
+  toBorderRadiusCss,
+} from "@templatical/types";
 import { escapeCssValue } from "./escape";
 
 /**
@@ -59,6 +67,45 @@ export function heightAttr(height: number | undefined): string {
   }
 
   return ` height="${height}px"`;
+}
+
+/**
+ * The width an element's side padding and border take from the box its
+ * children get, which is how MJML narrows a section's or wrapper's columns.
+ */
+export function horizontalInset(
+  padding: SpacingValue | undefined,
+  border?: BorderValue,
+): number {
+  const borderWidth = (side: BorderValue["left"] | undefined) =>
+    side && toBorderCss(side) !== null ? side.width : 0;
+  return (
+    (padding?.left ?? 0) +
+    (padding?.right ?? 0) +
+    borderWidth(border?.left) +
+    borderWidth(border?.right)
+  );
+}
+
+/**
+ * `fluid-on-mobile` for an `mj-image`, set only on one that fills its column:
+ * `"full"`, or a pixel width at or beyond the room MJML gives it, where MJML
+ * caps it: the column less the image's own side padding and border. It widens
+ * the image to the stacked column on a phone, which is wrong for one set
+ * narrower (a 120px logo would grow to the whole column). An image wider than
+ * the phone shrinks to fit without it.
+ *
+ * Pass `context.contentWidth`, which already excludes the insets of the
+ * sections and wrappers around the column.
+ */
+export function fluidOnMobileAttr(
+  width: "full" | number,
+  contentWidth: number,
+  padding: SpacingValue,
+  border?: BorderValue,
+): string {
+  const boxWidth = contentWidth - horizontalInset(padding, border);
+  return width === "full" || width >= boxWidth ? ' fluid-on-mobile="true"' : "";
 }
 
 /**

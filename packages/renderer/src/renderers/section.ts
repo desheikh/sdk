@@ -3,7 +3,12 @@ import { isSection } from "@templatical/types";
 import type { BlockRenderer, RenderContext } from "../render-context";
 import { getWidthPercentages, getWidthPixels } from "../columns";
 import { toPaddingString } from "../padding";
-import { bgAttr, borderAttr, borderRadiusAttr } from "../utils";
+import {
+  bgAttr,
+  borderAttr,
+  borderRadiusAttr,
+  horizontalInset,
+} from "../utils";
 import { isHiddenOnAll, getCssClassAttr } from "../visibility";
 import { wrapWithDisplayCondition } from "../display-condition";
 
@@ -28,6 +33,12 @@ export function renderSection(
   const columnsLayout = block.columns;
   const columnWidths = getWidthPercentages(columnsLayout);
   const columnWidthsPx = getWidthPixels(columnsLayout, context.containerWidth);
+  // What MJML gives each column: its share of the room left inside the
+  // section's padding and border.
+  const contentWidthsPx = getWidthPixels(
+    columnsLayout,
+    context.contentWidth - horizontalInset(block.styles.padding, block.border),
+  );
   const padding = toPaddingString(block.styles.padding);
   const bgColor = bgAttr(block.styles.backgroundColor, "native");
   const visibilityAttr = getCssClassAttr(block);
@@ -52,7 +63,10 @@ export function renderSection(
       column,
       context.allowHtmlBlocks,
     ).filter((child) => !isSection(child));
-    const columnContext = context.withContainerWidth(columnWidth);
+    const columnContext = context.withContainerWidth(
+      columnWidth,
+      Math.floor(contentWidthsPx[index] ?? context.contentWidth),
+    );
 
     const columnBlocks = filteredColumn
       .map((child) =>

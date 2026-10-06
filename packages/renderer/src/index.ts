@@ -20,7 +20,7 @@ import type { BlockRendererMap } from "./render-context";
 import { renderBlock } from "./renderers";
 import { escapeHtml, escapeAttr, escapeCssValue } from "./escape";
 import { wrapWithDisplayCondition } from "./display-condition";
-import { bgAttr, borderRadiusAttr } from "./utils";
+import { bgAttr, borderRadiusAttr, horizontalInset } from "./utils";
 import { richTextStylesheet, collectParagraphGaps } from "./rich-text";
 import { toPaddingString } from "./padding";
 
@@ -190,7 +190,6 @@ export async function renderToMjml(
       <mj-text font-size="14px"${textColorAttr} />
       <mj-section padding="0" />
       <mj-column padding="0" />
-      <mj-image fluid-on-mobile="true" />
     </mj-attributes>${fontDeclarations}
     <mj-style inline="inline">
       ${richTextStylesheet(collectParagraphGaps(blocks), contentDirection)}
@@ -218,8 +217,12 @@ ${bodyContent}
  */
 function renderTopLevelBlock(block: Block, context: RenderContext): string {
   if (isWrapper(block)) {
+    const innerContext = context.withContainerWidth(
+      context.containerWidth,
+      context.contentWidth - horizontalInset(block.styles.padding),
+    );
     const inner = filterHtmlBlocks(block.children, context.allowHtmlBlocks)
-      .map((child) => renderTopLevelBlock(child, context))
+      .map((child) => renderTopLevelBlock(child, innerContext))
       .filter((value) => value !== "")
       .join("\n");
     const framed = renderMjWrapper(inner, {
@@ -231,7 +234,15 @@ function renderTopLevelBlock(block: Block, context: RenderContext): string {
   }
 
   if (isSection(block)) {
-    const rendered = renderBlock(block, context);
+    const rendered = renderBlock(
+      block,
+      block.wrapper
+        ? context.withContainerWidth(
+            context.containerWidth,
+            context.contentWidth - horizontalInset(block.wrapper.padding),
+          )
+        : context,
+    );
     // An empty render (hidden section) stays empty — never emit a bare wrapper.
     const framed =
       block.wrapper && rendered !== ""

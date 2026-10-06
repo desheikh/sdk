@@ -73,13 +73,27 @@ export class RenderContext {
      * would leave a two-column RTL section rendering LTR inside the columns.
      */
     public readonly contentDirection: ContentDirection = "ltr",
-  ) {}
+    contentWidth?: number,
+  ) {
+    this.contentWidth = contentWidth ?? containerWidth;
+  }
+
+  /**
+   * The width MJML actually gives this container's content: `containerWidth`
+   * less the side padding and border of every section and wrapper around it.
+   * `containerWidth` stays the nominal share of the body width, which custom
+   * renderers already read.
+   */
+  public readonly contentWidth: number;
 
   /**
    * Create a new context with a different container width.
    * Used when rendering columns with narrower widths.
    */
-  withContainerWidth(width: number): RenderContext {
+  withContainerWidth(
+    width: number,
+    contentWidth: number = width,
+  ): RenderContext {
     return new RenderContext(
       width,
       this.customFonts,
@@ -89,6 +103,7 @@ export class RenderContext {
       this.socialIconsBaseUrl,
       this.blockRenderers,
       this.contentDirection,
+      contentWidth,
     );
   }
 
