@@ -6,8 +6,8 @@
 // color data comes from `SOCIAL_ICON_GLYPHS` in `@templatical/types` — the
 // single source of truth shared with the editor's inline-SVG renderer.
 //
-// Outputs `assets/social/{dir}/{platform}.png` at 192×192 (8× retina for
-// the default 24px display size; scales cleanly to 48px), one folder per style
+// Outputs `assets/social/{dir}/{platform}.png` at 144×144 (3× the largest
+// 48px display size), one folder per style
 // and tone: `socialIconAssetDir` names it, and `socialIconColors` picks the
 // colors, the same rules the editor's inline SVG follows.
 // A dark `plain` or `outlined` icon also gets `socialIconHalo`.
@@ -28,7 +28,7 @@ import {
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT_DIR = resolve(__dirname, "../assets/social");
-const RENDER_SIZE = 192;
+const RENDER_SIZE = 144;
 const VIEW_SIZE = 24;
 const OUTLINE_WIDTH = 2;
 
