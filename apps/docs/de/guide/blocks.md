@@ -123,10 +123,13 @@ Eine Reihe von Social-Media-Icons, die zu Plattformprofilen verlinken.
 | Eigenschaft | Typ | Beschreibung |
 |----------|------|-------------|
 | `icons` | `SocialIcon[]` | Liste der Social Icons |
-| `iconStyle` | `'solid' \| 'outlined' \| 'rounded' \| 'square' \| 'circle'` | Visueller Stil |
+| `iconStyle` | `'solid' \| 'outlined' \| 'rounded' \| 'square' \| 'circle' \| 'plain'` | Form. `plain` ist das Symbol allein, ohne Fläche oder Umriss |
+| `iconTone` | `'brand' \| 'dark' \| 'light'` | Optional. Die Markenfarbe jeder Plattform (Standard) oder ein Farbton für alle Icons. Eine gefüllte Form zeigt das Symbol weiß auf dem Farbton, bei `light` fast schwarz |
 | `iconSize` | `'small' \| 'medium' \| 'large'` | Icon-Größe |
 | `spacing` | `number` | Abstand zwischen Icons in px |
 | `align` | `'left' \| 'center' \| 'right'` | Horizontale Ausrichtung |
+
+E-Mail-Clients, die in den Dunkelmodus wechseln, etwa die Gmail-App und Outlook, dunkeln den Hintergrund ab, lassen Bilder aber unverändert, sodass ein `plain`- oder `outlined`-Icon in `dark` verschwinden kann. Wählen Sie für dunkle Icons besser eine gefüllte Form, deren weißes Symbol sichtbar bleibt.
 
 17 Plattformen werden unterstützt: Facebook, Twitter/X, Instagram, LinkedIn, YouTube, TikTok, Pinterest, E-Mail, Website, WhatsApp, Telegram, Discord, Snapchat, Reddit, GitHub, Dribbble und Behance.
 
