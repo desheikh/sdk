@@ -129,7 +129,7 @@ Eine Reihe von Social-Media-Icons, die zu Plattformprofilen verlinken.
 | `spacing` | `number` | Abstand zwischen Icons in px |
 | `align` | `'left' \| 'center' \| 'right'` | Horizontale Ausrichtung |
 
-E-Mail-Clients, die in den Dunkelmodus wechseln, etwa die Gmail-App und Outlook, dunkeln den Hintergrund ab, lassen Bilder aber unverändert, sodass ein `plain`- oder `outlined`-Icon in `dark` verschwinden kann. Wählen Sie für dunkle Icons besser eine gefüllte Form, deren weißes Symbol sichtbar bleibt.
+E-Mail-Clients, die in den Dunkelmodus wechseln, etwa die Gmail-App und Outlook, ändern den Hintergrund, lassen Bilder aber unverändert. Ein dunkles `plain`- oder `outlined`-Icon trägt deshalb einen dezenten weißen Rand, der auf hellen Hintergründen kaum zu sehen ist und das Icon als Umriss sichtbar hält, sobald der Hintergrund dunkel wird. Helle Icons haben keinen Rand, damit sie auf farbigen Flächen sauber bleiben. Clients, die einen dunklen Hintergrund hell machen (die Gmail-App unter iOS, Outlook für Windows), können ein helles `plain`- oder `outlined`-Icon aber verschwinden lassen. Eine gefüllte Form vermeidet beides, da ihr Hintergrund für den Kontrast sorgt.
 
 17 Plattformen werden unterstützt: Facebook, Twitter/X, Instagram, LinkedIn, YouTube, TikTok, Pinterest, E-Mail, Website, WhatsApp, Telegram, Discord, Snapchat, Reddit, GitHub, Dribbble und Behance.
 

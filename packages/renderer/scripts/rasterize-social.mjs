@@ -10,6 +10,7 @@
 // the default 24px display size; scales cleanly to 48px), one folder per style
 // and tone: `socialIconAssetDir` names it, and `socialIconColors` picks the
 // colors, the same rules the editor's inline SVG follows.
+// A dark `plain` or `outlined` icon also gets `socialIconHalo`.
 
 import { renderAsync } from "@resvg/resvg-js";
 import { mkdir, writeFile, rm } from "node:fs/promises";
@@ -22,12 +23,14 @@ import {
   socialIconAssetDir,
   socialIconColors,
   socialIconGlyphScale,
+  socialIconHalo,
 } from "@templatical/types";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT_DIR = resolve(__dirname, "../assets/social");
 const RENDER_SIZE = 192;
 const VIEW_SIZE = 24;
+const OUTLINE_WIDTH = 2;
 
 function buildSvg(platform, style, tone) {
   const { path } = SOCIAL_ICON_GLYPHS[platform];
@@ -45,7 +48,7 @@ function buildSvg(platform, style, tone) {
       bgShape = `<rect width="24" height="24" rx="0" fill="${fill}"/>`;
       break;
     case "outlined":
-      bgShape = `<rect width="22" height="22" x="1" y="1" rx="3" fill="transparent" stroke="${fill}" stroke-width="2"/>`;
+      bgShape = `<rect width="22" height="22" x="1" y="1" rx="3" fill="transparent" stroke="${fill}" stroke-width="${OUTLINE_WIDTH}"/>`;
       glyphColor = fill;
       break;
     case "plain":
@@ -58,10 +61,17 @@ function buildSvg(platform, style, tone) {
   }
   const scale = socialIconGlyphScale(style);
   const offset = Number(((VIEW_SIZE * (1 - scale)) / 2).toFixed(3));
+  const halo = socialIconHalo(style, tone);
+  const haloStroke = (width) =>
+    `fill="none" stroke="${halo.color}" stroke-opacity="${halo.opacity}" stroke-width="${width}" stroke-linejoin="round"`;
   return (
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${VIEW_SIZE} ${VIEW_SIZE}" width="${VIEW_SIZE}" height="${VIEW_SIZE}">` +
+    (halo && style === "outlined"
+      ? `<rect width="22" height="22" x="1" y="1" rx="3" ${haloStroke(OUTLINE_WIDTH + halo.width)}/>`
+      : "") +
     bgShape +
     `<g transform="translate(${offset}, ${offset}) scale(${scale})">` +
+    (halo ? `<path d="${path}" ${haloStroke(halo.width / scale)}/>` : "") +
     `<path d="${path}" fill="${glyphColor}"/>` +
     `</g></svg>`
   );

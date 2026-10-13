@@ -211,9 +211,12 @@ underline: bool, color?: hex }`.
 - `iconStyle` is one of `"solid"`, `"outlined"`, `"rounded"`, `"square"`,
   `"circle"`, `"plain"` (the glyph alone, no badge).
 - `iconTone` is one of `"brand"` (each platform's color, the default),
-  `"dark"`, `"light"`. Use `"light"` on a dark background. For `"dark"`,
-  prefer a filled shape: dark-mode clients darken the background but not
-  images, so a `"plain"` or `"outlined"` dark icon can disappear.
+  `"dark"`, `"light"`. Use `"light"` on a dark background. Dark-mode
+  clients change the background but not images, so a `"dark"` `"plain"` or
+  `"outlined"` icon carries a faint white halo, barely visible on light
+  backgrounds, that keeps it visible as an outline. A light icon has none and
+  can disappear where a client turns a dark background light. A filled shape
+  is the most reliable either way.
 - `iconSize` is one of `"small"`, `"medium"`, `"large"`.
 
 ### video

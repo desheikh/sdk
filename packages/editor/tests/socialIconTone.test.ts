@@ -24,11 +24,14 @@ function draw(iconStyle: SocialIconStyle, iconTone?: SocialIconTone) {
   });
   const box = wrapper.find("span").element as HTMLElement;
   const svg = wrapper.find("svg");
+  const halo = wrapper.find('[data-testid="social-icon-halo"]');
   return {
     background: box.style.backgroundColor,
     border: box.style.border,
-    glyph: svg.attributes("fill"),
+    shadow: box.style.boxShadow,
+    glyph: svg.findAll("path").at(-1)!.attributes("fill"),
     glyphSize: svg.attributes("width"),
+    halo: halo.exists() ? halo.attributes("stroke") : undefined,
   };
 }
 
@@ -38,6 +41,32 @@ function css(hex: string): string {
   el.style.backgroundColor = hex;
   return el.style.backgroundColor;
 }
+
+describe("SocialIconSvg halo", () => {
+  it("traces a dark plain glyph in white", () => {
+    expect(draw("plain", "dark").halo).toBe(SOCIAL_ICON_TONE_COLORS.light);
+  });
+
+  it("traces an outlined icon's glyph and border", () => {
+    const icon = draw("outlined", "dark");
+    expect(icon.halo).toBe(SOCIAL_ICON_TONE_COLORS.light);
+    expect(icon.shadow).toContain("inset");
+  });
+
+  it("leaves light icons, brand colors and filled shapes without one", () => {
+    for (const icon of [
+      draw("plain"),
+      draw("outlined", "brand"),
+      draw("plain", "light"),
+      draw("outlined", "light"),
+      draw("circle", "dark"),
+      draw("solid", "light"),
+    ]) {
+      expect(icon.halo).toBeUndefined();
+      expect(icon.shadow).toBe("");
+    }
+  });
+});
 
 describe("SocialIconSvg colors", () => {
   it("keeps the brand look when no color is set", () => {
@@ -89,7 +118,7 @@ describe("SocialIconsBlock", () => {
       props: { block, viewport: "desktop" },
     });
 
-    expect(wrapper.find("svg").attributes("fill")).toBe(
+    expect(wrapper.find("svg path:last-child").attributes("fill")).toBe(
       SOCIAL_ICON_TONE_COLORS.light,
     );
   });

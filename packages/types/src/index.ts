@@ -63,6 +63,7 @@ export {
   socialIconAssetDir,
   socialIconColors,
   socialIconGlyphScale,
+  socialIconHalo,
 } from "./social";
 
 // Saved blocks (reusable user-authored block groups + the storage contract)

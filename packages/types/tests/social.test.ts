@@ -7,6 +7,7 @@ import {
   socialIconAssetDir,
   socialIconColors,
   socialIconGlyphScale,
+  socialIconHalo,
 } from "../src/social";
 import type { SocialIconTone } from "../src/blocks";
 
@@ -130,5 +131,35 @@ describe("socialIconGlyphScale", () => {
     for (const style of SOCIAL_ICON_STYLES.filter((s) => s !== "plain")) {
       expect(socialIconGlyphScale(style)).toBe(0.6);
     }
+  });
+});
+
+describe("socialIconHalo", () => {
+  it("gives dark plain and outlined icons a white halo", () => {
+    for (const style of ["plain", "outlined"] as const) {
+      expect(socialIconHalo(style, "dark")?.color).toBe(
+        SOCIAL_ICON_TONE_COLORS.light,
+      );
+    }
+  });
+
+  it("gives light icons none, so white stays clean on a colored band", () => {
+    for (const style of ["plain", "outlined", "circle"] as const) {
+      expect(socialIconHalo(style, "light")).toBeUndefined();
+    }
+  });
+
+  it("gives brand colors and filled shapes none", () => {
+    expect(socialIconHalo("plain", undefined)).toBeUndefined();
+    expect(socialIconHalo("outlined", "brand")).toBeUndefined();
+    for (const style of ["solid", "rounded", "square", "circle"] as const) {
+      expect(socialIconHalo(style, "dark")).toBeUndefined();
+    }
+  });
+
+  it("gives an unknown tone none", () => {
+    expect(
+      socialIconHalo("plain", "neon" as unknown as SocialIconTone),
+    ).toBeUndefined();
   });
 });

@@ -6,7 +6,11 @@ import type {
   SocialIconStyle,
   SocialPlatform,
 } from "@templatical/types";
-import { socialIconColors, socialIconGlyphScale } from "@templatical/types";
+import {
+  socialIconColors,
+  socialIconGlyphScale,
+  socialIconHalo,
+} from "@templatical/types";
 import { computed } from "vue";
 
 const props = defineProps<{
@@ -20,6 +24,7 @@ const iconDef = computed(() => socialIcons[props.platform]);
 const size = computed(() => socialIconSizeMap[props.iconSize]);
 // The same colors the renderer's PNGs are drawn in.
 const colors = computed(() => socialIconColors(props.platform, props.iconTone));
+const halo = computed(() => socialIconHalo(props.iconStyle, props.iconTone));
 
 const containerStyle = computed(() => {
   const baseStyles: Record<string, string> = {
@@ -44,6 +49,7 @@ const containerStyle = computed(() => {
         backgroundColor: "transparent",
         border: `2px solid ${fill}`,
         borderRadius: "4px",
+        ...(halo.value && { boxShadow: outlineHaloShadow(halo.value) }),
       };
     case "rounded":
       return {
@@ -68,9 +74,24 @@ const containerStyle = computed(() => {
   }
 });
 
-const svgSize = computed(() =>
-  Math.floor(size.value * socialIconGlyphScale(props.iconStyle)),
-);
+const glyphScale = computed(() => socialIconGlyphScale(props.iconStyle));
+
+const svgSize = computed(() => Math.floor(size.value * glyphScale.value));
+
+// The PNG traces both sides of the outline; a shadow outside and one inside
+// the border do the same.
+function outlineHaloShadow(h: {
+  color: string;
+  opacity: number;
+  width: number;
+}) {
+  const spread = `${((h.width / 2) * size.value) / 24}px`;
+  const alpha = Math.round(h.opacity * 255)
+    .toString(16)
+    .padStart(2, "0");
+  const color = `${h.color}${alpha}`;
+  return `0 0 0 ${spread} ${color}, inset 0 0 0 ${spread} ${color}`;
+}
 
 const svgColor = computed(() =>
   props.iconStyle === "outlined" || props.iconStyle === "plain"
@@ -85,10 +106,20 @@ const svgColor = computed(() =>
       :width="svgSize"
       :height="svgSize"
       viewBox="0 0 24 24"
-      :fill="svgColor"
+      overflow="visible"
       xmlns="http://www.w3.org/2000/svg"
     >
-      <path :d="iconDef.path" />
+      <path
+        v-if="halo"
+        data-testid="social-icon-halo"
+        :d="iconDef.path"
+        fill="none"
+        :stroke="halo.color"
+        :stroke-opacity="halo.opacity"
+        :stroke-width="halo.width / glyphScale"
+        stroke-linejoin="round"
+      />
+      <path :d="iconDef.path" :fill="svgColor" />
     </svg>
   </span>
 </template>

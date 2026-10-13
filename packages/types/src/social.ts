@@ -162,6 +162,29 @@ export function socialIconAssetDir(
 }
 
 /**
+ * The halo a dark `plain` or `outlined` icon is drawn with, shared by the
+ * editor's inline SVG and the renderer's PNGs. Neither has a badge behind it,
+ * and nearly every dark-mode client darkens a light background without
+ * touching images, which would hide the icon. The faint white halo is barely
+ * visible on light backgrounds and traces the icon once the background turns
+ * dark. A light icon has none: a dark halo would outline it on every colored
+ * band it's meant for. `width` is in the icon's 24-unit grid, centered on the
+ * edge it traces.
+ */
+export function socialIconHalo(
+  style: SocialIconStyle,
+  tone: SocialIconTone | undefined,
+): { color: string; opacity: number; width: number } | undefined {
+  if (oneColorTone(tone) !== "dark") return undefined;
+  if (style !== "plain" && style !== "outlined") return undefined;
+  return {
+    color: SOCIAL_ICON_TONE_COLORS.light,
+    opacity: 0.6,
+    width: 1.4,
+  };
+}
+
+/**
  * The glyph's share of the icon's width: larger when it stands alone
  * (`plain`) than inside a badge or outline.
  */
