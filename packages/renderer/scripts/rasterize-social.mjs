@@ -7,13 +7,19 @@
 // single source of truth shared with the editor's inline-SVG renderer.
 //
 // Outputs `assets/social/{dir}/{platform}.png` at 144×144 (3× the largest
-// 48px display size), one folder per style
+// 48px display size), compressed losslessly by oxipng, one folder per style
 // and tone: `socialIconAssetDir` names it, and `socialIconColors` picks the
 // colors, the same rules the editor's inline SVG follows.
 // A dark `plain` or `outlined` icon also gets `socialIconHalo`.
 
 import { renderAsync } from "@resvg/resvg-js";
-import { mkdir, writeFile, rm } from "node:fs/promises";
+// The single-thread codec: the package's default entry checks for the
+// browser's ImageData, which Node doesn't have.
+import initOxipng, {
+  optimise,
+} from "@jsquash/oxipng/codec/pkg/squoosh_oxipng.js";
+import { mkdir, readFile, writeFile, rm } from "node:fs/promises";
+import { createRequire } from "node:module";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
@@ -29,6 +35,9 @@ import {
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT_DIR = resolve(__dirname, "../assets/social");
 const RENDER_SIZE = 144;
+// oxipng's default level: higher ones save about 0.5% for several times
+// the build time.
+const OXIPNG_LEVEL = 2;
 const VIEW_SIZE = 24;
 const OUTLINE_WIDTH = 2;
 
@@ -85,11 +94,18 @@ async function renderOne(platform, style, tone, dir) {
     textRendering: 2,
     imageRendering: 0,
   });
-  await writeFile(resolve(dir, `${platform}.png`), rendered.asPng());
+  const png = optimise(rendered.asPng(), OXIPNG_LEVEL, false, false);
+  await writeFile(resolve(dir, `${platform}.png`), png);
 }
 
 async function main() {
   const start = performance.now();
+  const require = createRequire(import.meta.url);
+  await initOxipng(
+    await readFile(
+      require.resolve("@jsquash/oxipng/codec/pkg/squoosh_oxipng_bg.wasm"),
+    ),
+  );
   await rm(OUT_DIR, { recursive: true, force: true });
 
   const platforms = Object.keys(SOCIAL_ICON_GLYPHS);
