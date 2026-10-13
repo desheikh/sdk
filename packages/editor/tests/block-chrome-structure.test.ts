@@ -222,8 +222,9 @@ describe("section drag + cycle defenses", () => {
 
     // Canvas restricts sortable items to `.tpl-block-item` so the
     // empty-state placeholder rendered inside the VueDraggable isn't
-    // treated as a drag item. SectionBlock doesn't need this — its
-    // VueDraggable has only sortable children.
+    // treated as a drag item. SectionBlock's VueDraggable has only sortable
+    // children, so it keeps the default; its children still carry the class
+    // (see sectionColumnCanvasDrop.test.ts).
     expect(canvas).toMatch(/:draggable="'\.tpl-block-item'"/);
     expect(canvas).toMatch(/v-for=[\s\S]*?class="tpl-block-item"/);
 

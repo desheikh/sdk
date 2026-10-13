@@ -175,9 +175,12 @@ function handleFetchData(
           class="tpl:min-h-[60px]"
           @update:model-value="(val: Block[]) => setColumnBlocks(colIndex, val)"
         >
+          <!-- Sortable counts a drop's index with the source list's
+               `draggable`; for a drag from the canvas, `.tpl-block-item`. -->
           <div
             v-for="childBlock in getColumnBlocks(colIndex)"
             :key="childBlock.id"
+            class="tpl-block-item"
             v-show="
               appliesConditionFilter === false ||
               !conditionPreview?.isHidden(childBlock.id)

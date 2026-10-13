@@ -1,5 +1,6 @@
+import type { Page } from "@playwright/test";
 import { test, expect } from "../fixtures/editor.fixture";
-import { blockByType } from "../helpers/selectors";
+import { blockByType, SELECTORS } from "../helpers/selectors";
 
 /**
  * Cross-container and intra-section drag-and-drop coverage.
@@ -283,5 +284,111 @@ test.describe("Editor cross-container drag-and-drop", () => {
     expect(
       await editorPage.getSectionColumnBlockIds(0, 0),
     ).not.toContain(movedId);
+  });
+});
+
+// Seeds its own layout and drives the pointer directly, the same way the
+// helpers above do, so it isn't subject to the `fixme` note at the top.
+test.describe("Canvas block dropped into a non-empty section column", () => {
+  const PADDING = { padding: { top: 10, right: 10, bottom: 10, left: 10 } };
+  const paragraph = (id: string, text: string) => ({
+    id,
+    type: "paragraph",
+    content: `<p>${text}</p>`,
+    styles: PADDING,
+  });
+  // A top-level divider, then a section whose first column holds A and B.
+  const CONTENT = {
+    settings: {
+      width: 600,
+      backgroundColor: "#ffffff",
+      textColor: "#1a1a1a",
+      fontFamily: "Arial",
+      locale: "en",
+    },
+    blocks: [
+      {
+        id: "moving",
+        type: "divider",
+        lineStyle: "solid",
+        color: "#333333",
+        thickness: 2,
+        width: "full",
+        styles: PADDING,
+      },
+      {
+        id: "section",
+        type: "section",
+        columns: "2",
+        styles: PADDING,
+        children: [
+          [paragraph("a", "Block A"), paragraph("b", "Block B")],
+          [paragraph("c", "Block C")],
+        ],
+      },
+    ],
+  };
+
+  async function openWithContent(page: Page, shadowDom: boolean) {
+    await page.route("**/api/shares/canvas-into-column", async (route) => {
+      if (route.request().method() !== "GET") {
+        await route.fallback();
+        return;
+      }
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          id: "canvas-into-column",
+          sceneId: "minimum",
+          content: CONTENT,
+          createdAt: "2026-10-13T00:00:00.000Z",
+        }),
+      });
+    });
+    await page.goto(
+      `/?s=canvas-into-column&shadowDom=${shadowDom ? "1" : "0"}`,
+    );
+    await page.waitForSelector(
+      '[data-testid="scene-host"][data-scene-ready="true"]',
+    );
+  }
+
+  test("lands where it's dropped, not first in the column", async ({
+    editorPage,
+    page,
+    shadowDom,
+  }) => {
+    await openWithContent(page, shadowDom);
+    await editorPage.waitForReady();
+    await editorPage.dismissOverlays();
+
+    const moving = page.locator('[data-block-id="moving"]');
+    await moving.click();
+    const handle = moving.locator(SELECTORS.blockDragHandle).first();
+    await handle.waitFor();
+    const handleBox = (await handle.boundingBox())!;
+    const startX = handleBox.x + handleBox.width / 2;
+    const startY = handleBox.y + handleBox.height / 2;
+
+    await page.mouse.move(startX, startY);
+    await page.mouse.down();
+    // Nudge past Sortable's drag-start threshold. The divider then collapses
+    // to its zero-height ghost and the section moves up, so A is measured
+    // only after this.
+    await page.mouse.move(startX + 5, startY + 5);
+    const aBox = (await page.locator('[data-block-id="a"]').boundingBox())!;
+    const x = aBox.x + aBox.width / 2;
+    // Enter the column over A, then aim at A's lower edge so Sortable places
+    // the divider after it. Several intermediate moves let Sortable's
+    // force-fallback hit test register the column.
+    await page.mouse.move(x, aBox.y + aBox.height / 2, { steps: 20 });
+    await page.mouse.move(x, aBox.y + aBox.height * 0.9, { steps: 10 });
+    await page.mouse.up();
+
+    await expect
+      .poll(() => editorPage.getSectionColumnBlockIds(0, 0))
+      .toEqual(["a", "moving", "b"]);
+    expect(await editorPage.getTopLevelBlockIds()).toEqual(["section"]);
   });
 });
