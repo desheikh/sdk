@@ -218,18 +218,22 @@ editor.setContent(createDefaultTemplateContent());
 Inserts a block where a click on a palette item would put it: below the selected block, in the same column when the selection is inside a section (a section lands after that section instead), or at the end when nothing is selected. The new block is selected and scrolled into view, so the next call inserts below it. Use it to insert from your own UI, such as a library of ready-made sections.
 
 ```ts
-import { createParagraphBlock } from "@templatical/types";
+import type { Block } from "@templatical/types";
 
-insertButton.addEventListener("click", () => {
-  editor.insertBlock(
-    createParagraphBlock({ content: "<p>Thanks for reading!</p>" }),
-  );
+// A section from your own library, saved earlier as editor JSON
+// (for example, a block taken from `editor.getContent().blocks`).
+const footer: Block = librarySections.footer;
+
+footerButton.addEventListener("click", () => {
+  editor.insertBlock(footer);
 });
 ```
 
 **Parameter:** `block: Block`
 
-**Returns:** `string | null`, the inserted block's id, or `null` before the editor has mounted, in preview mode, or when the block cannot be placed.
+**Returns:** `string | null`, the inserted block's id, or `null` when the instance was unmounted or replaced by a later `init()` on the same container, in preview mode (with a console warning), or when the block cannot be placed.
+
+The block is inserted as given. A block from the palette is built with the editor's defaults: your `blockDefaults`, localized placeholder text, and right alignment for titles and tables in RTL templates. Those aren't applied here, which suits ready-made content but means a block fresh from `createTitleBlock()` can come out different from a palette one.
 
 The editor inserts a copy with fresh ids, section children included, so the same block can be inserted any number of times. Look the block up by the returned id, not by `block.id`. Bare merge tags in its text are converted the same way `setContent` converts them. A slot or wrapper block throws, as it does in `setContent`.
 

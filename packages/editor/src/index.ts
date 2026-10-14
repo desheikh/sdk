@@ -664,11 +664,17 @@ interface TemplaticalEditorBase {
    * usable is selected. The new block is selected and scrolled into view, so
    * repeated calls stack in order.
    *
+   * The block is inserted as given: the editor defaults a palette block is
+   * built with (`blockDefaults`, localized placeholder text, RTL alignment)
+   * aren't applied, so insert ready-made content rather than fresh factory
+   * blocks.
+   *
    * Inserts a copy with fresh ids, so the same block can be inserted twice.
    * Bare merge tags are converted the same way `setContent` converts them.
-   * Returns the inserted copy's id, or `null` before mount, in preview mode,
-   * or when the block could not be placed. A slot or wrapper block throws, as
-   * it does in `setContent`.
+   * Returns the inserted copy's id, or `null` once the instance is unmounted
+   * or replaced by a later `init()` on its container, in preview mode (with a
+   * warning), or when the block could not be placed. A slot or wrapper block
+   * throws, as it does in `setContent`.
    */
   insertBlock(block: Block): string | null;
   setTheme(theme: UiTheme): void;

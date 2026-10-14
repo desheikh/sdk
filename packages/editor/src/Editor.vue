@@ -502,7 +502,10 @@ defineExpose({
   setContent: (content: TemplateContent) => editor.setContent(content),
   insertBlock: (block: Block): string | null => {
     // The palette is hidden in preview mode, and preview has no selection.
-    if (editor.state.previewMode) return null;
+    if (editor.state.previewMode) {
+      logger.warn("insertBlock() does nothing in preview mode.");
+      return null;
+    }
     // A copy with fresh ids throughout, so inserting the same library item
     // twice never puts two blocks, rows or items on the canvas with one id.
     const copy = cloneBlock(block);

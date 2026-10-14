@@ -468,7 +468,7 @@ describe("OSS init — instance methods", () => {
       /not ready/i,
     );
 
-    // Before mount there is no editor to insert into.
+    // With no editor behind the instance there is nothing to insert into.
     expect(instance.insertBlock(createParagraphBlock())).toBeNull();
     // A slot is rejected even here, as setContent would reject it.
     expect(() => instance.insertBlock(createSlotBlock())).toThrow(/slot/);

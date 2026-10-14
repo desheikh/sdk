@@ -135,9 +135,7 @@ describe("block factory functions", () => {
     expect(createSectionBlock({ stackOnMobile: false }).stackOnMobile).toBe(
       false,
     );
-    expect(createSectionBlock({ stackOnMobile: true }).stackOnMobile).toBe(
-      true,
-    );
+    expect(createSectionBlock({ stackOnMobile: true }).stackOnMobile).toBe(true);
   });
 
   it("applies a wrapper (outer frame) override on a section block", () => {
@@ -827,12 +825,7 @@ describe("layout block factories", () => {
   it("createSlotBlock returns type slot with zero padding and a uuid", () => {
     const block = createSlotBlock();
     expect(block.type).toBe("slot");
-    expect(block.styles.padding).toEqual({
-      top: 0,
-      right: 0,
-      bottom: 0,
-      left: 0,
-    });
+    expect(block.styles.padding).toEqual({ top: 0, right: 0, bottom: 0, left: 0 });
     expect(block.id).toMatch(
       /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
     );
@@ -842,12 +835,7 @@ describe("layout block factories", () => {
     const block = createWrapperBlock();
     expect(block.type).toBe("wrapper");
     expect(block.children).toEqual([]);
-    expect(block.styles.padding).toEqual({
-      top: 0,
-      right: 0,
-      bottom: 0,
-      left: 0,
-    });
+    expect(block.styles.padding).toEqual({ top: 0, right: 0, bottom: 0, left: 0 });
   });
 
   it("createBlock(slot) throws", () => {

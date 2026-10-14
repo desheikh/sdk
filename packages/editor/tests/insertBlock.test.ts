@@ -11,6 +11,7 @@ import { nextTick } from "vue";
 import { mount, type VueWrapper } from "@vue/test-utils";
 import type { Block, SectionBlock, TemplateContent } from "@templatical/types";
 import {
+  createButtonBlock,
   createDefaultTemplateContent,
   createParagraphBlock,
   createSectionBlock,
@@ -60,6 +61,12 @@ async function mountRealEditor(
   return { wrapper, editor: wrapper.vm as unknown as Exposed };
 }
 
+function pressUndo(): void {
+  document.dispatchEvent(
+    new KeyboardEvent("keydown", { key: "z", ctrlKey: true, bubbles: true }),
+  );
+}
+
 function topLevelIds(editor: Exposed): string[] {
   return editor.getContent().blocks.map((block) => block.id);
 }
@@ -100,6 +107,22 @@ describe("insertBlock", () => {
     expect(editor.getContent().blocks[0]).not.toBe(block);
   });
 
+  it("inserts the block as given, without the editor's block defaults", async () => {
+    const { editor } = await mountRealEditor([], {
+      blockDefaults: {
+        button: { text: "Default", backgroundColor: "#ff0000" },
+      },
+    });
+    const block = createButtonBlock({
+      text: "From the library",
+      backgroundColor: "#111111",
+    });
+
+    const id = editor.insertBlock(block);
+
+    expect(editor.getContent().blocks[0]).toEqual({ ...block, id });
+  });
+
   it("gives a section's children fresh ids too", async () => {
     const { editor } = await mountRealEditor([]);
     const child = createParagraphBlock();
@@ -124,7 +147,26 @@ describe("insertBlock", () => {
     expect(inserted.rows[0].cells[0].id).not.toBe(table.rows[0].cells[0].id);
   });
 
-  it("refuses while the editor is in preview mode", async () => {
+  it("is one undo step per insert", async () => {
+    const { editor } = await mountRealEditor([createParagraphBlock()]);
+    // `getContent()` here is the live state, so compare copies.
+    const snapshot = () => JSON.parse(JSON.stringify(editor.getContent()));
+    const before = snapshot();
+
+    editor.insertBlock(createParagraphBlock());
+    const afterFirst = snapshot();
+    editor.insertBlock(
+      createSectionBlock({ children: [[createParagraphBlock()], []] }),
+    );
+
+    pressUndo();
+    expect(editor.getContent()).toEqual(afterFirst);
+    pressUndo();
+    expect(editor.getContent()).toEqual(before);
+  });
+
+  it("refuses while the editor is in preview mode, with a warning", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     const only = createParagraphBlock();
     const { wrapper, editor } = await mountRealEditor([only]);
 
@@ -132,6 +174,10 @@ describe("insertBlock", () => {
 
     expect(editor.insertBlock(createParagraphBlock())).toBeNull();
     expect(topLevelIds(editor)).toEqual([only.id]);
+    expect(warn).toHaveBeenCalledWith(
+      "[Templatical]",
+      expect.stringContaining("preview mode"),
+    );
   });
 
   it("throws for a slot, as setContent does", async () => {
