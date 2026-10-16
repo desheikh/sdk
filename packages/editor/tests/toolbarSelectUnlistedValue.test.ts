@@ -61,17 +61,11 @@ describe("ToolbarSelect with a value its options don't list", () => {
   });
 
   it("shows the placeholder for no value or a CSS-wide keyword", () => {
-    for (const value of ["", "inherit", "initial !important"]) {
+    for (const value of ["", "inherit", "revert-layer"]) {
       const select = render(value);
       expect(select.bound).toBe("");
       expect(select.options).toHaveLength(3);
     }
-  });
-
-  it("keeps !important out of the label but binds the raw value", () => {
-    const select = render("15px !important");
-    expect(select.bound).toBe("15px !important");
-    expect(select.options[1]).toEqual(["15px !important", "15px"]);
   });
 
   it("emits the option chosen instead", async () => {

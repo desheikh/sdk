@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { selectValue, withoutImportant } from "../../utils/cssValue";
 
 interface OptionItem {
   value: string;
@@ -31,17 +30,29 @@ function optionLabel(opt: string | OptionItem): string {
   return typeof opt === "string" ? opt : opt.label;
 }
 
-const boundValue = computed(() => selectValue(props.modelValue));
+const CSS_WIDE_KEYWORDS = new Set([
+  "inherit",
+  "initial",
+  "unset",
+  "revert",
+  "revert-layer",
+]);
 
-// Imported or pasted text can carry a value the presets don't offer (15px,
-// a 1.3 line height). Listing it first keeps the select showing what's
-// applied instead of going blank.
+// `modelValue` is a browser-parsed CSS value (read through `element.style`),
+// so it arrives normalized: "16.0px" as "16px", "1.50" as "1.5", no
+// `!important`. That is what makes the exact match below safe. A CSS-wide
+// keyword reads as unset; any other value the options don't list (15px from
+// imported text, say) is listed first, so the select shows what's applied.
+const boundValue = computed(() =>
+  CSS_WIDE_KEYWORDS.has(props.modelValue) ? "" : props.modelValue,
+);
+
 const listedOptions = computed<readonly (string | OptionItem)[]>(() => {
   const value = boundValue.value;
   if (value === "" || props.options.some((opt) => optionValue(opt) === value)) {
     return props.options;
   }
-  return [{ value, label: withoutImportant(value) }, ...props.options];
+  return [value, ...props.options];
 });
 </script>
 
