@@ -38,11 +38,14 @@ const CSS_WIDE_KEYWORDS = new Set([
   "revert-layer",
 ]);
 
-// `modelValue` is a browser-parsed CSS value (read through `element.style`),
-// so it arrives normalized: "16.0px" as "16px", "1.50" as "1.5", no
-// `!important`. That is what makes the exact match below safe. A CSS-wide
-// keyword reads as unset; any other value the options don't list (15px from
-// imported text, say) is listed first, so the select shows what's applied.
+// For font size, line height and letter spacing, `modelValue` is a
+// browser-parsed CSS value (read through `element.style`), so it arrives
+// normalized: "16.0px" as "16px", "1.50" as "1.5", no `!important`. That is
+// what makes the exact match below safe. A CSS-wide keyword reads as unset;
+// any other value the options don't list (15px from imported text, say) is
+// listed first, so the select shows what's applied. The font select's value
+// is raw (TipTap reads `font-family` as written), but `withCurrentFont`
+// always lists it, so this fallback never adds it.
 const boundValue = computed(() =>
   CSS_WIDE_KEYWORDS.has(props.modelValue) ? "" : props.modelValue,
 );
